@@ -1,21 +1,24 @@
 pub mod game;
+pub mod server;
+pub mod errors;
 
-use crate::game::game_state::SECTION_COUNT;
-use crate::game::section::SUB_SECTION_COUNT;
+use game::game_state::*;
+use game::section::*;
+use game::sub_section::*;
 use rand::seq::SliceRandom;
 use rand::Rng;
 
 fn main() 
 {
     // Create game state
-    let mut state = game::GameState::new();
+    let mut state = GameState::new();
 
     // Take a list of all car parts and shuffle them
     let car_parts = [
-        game::CarPart::Battery, 
-        game::CarPart::Gasoline, 
-        game::CarPart::Headlights, 
-        game::CarPart::SparkPlug];
+        CarPart::Battery, 
+        CarPart::Gasoline, 
+        CarPart::Headlights, 
+        CarPart::SparkPlug];
     
     // Must be one less part than the number of sections
     assert_eq!(car_parts.len(), SECTION_COUNT - 1);
@@ -48,7 +51,7 @@ fn main()
     {
         for sub_section in section.sub_sections.iter()
         {
-            if sub_section.part != game::CarPart::None
+            if sub_section.part != CarPart::None
             {
                 println!("{} {}", section.name, sub_section.name);
             }

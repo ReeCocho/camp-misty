@@ -1,4 +1,4 @@
-use crate::game::sub_section::SubSection;
+use crate::game::sub_section::*;
 
 /// Total number of sub-sections contained within a section.
 pub const SUB_SECTION_COUNT : usize = 5;
@@ -13,7 +13,10 @@ pub struct Section
     pub letter : char,
 
     // Sub-sections.
-    pub sub_sections : [SubSection; SUB_SECTION_COUNT]
+    pub sub_sections : [SubSection; SUB_SECTION_COUNT],
+
+    /// A flag indicating if the section is trapped or not.
+    pub trapped : bool
 }
 
 impl Section 
@@ -30,7 +33,8 @@ impl Section
         { 
             name : name,
             letter : letter,
-            sub_sections : sub_sections  
+            sub_sections : sub_sections,
+            trapped : false
         } 
     }
 }

@@ -1,6 +1,6 @@
-use crate::game::Section;
-use crate::game::SubSection;
-use crate::game::CarPart;
+use crate::game::section::*;
+use crate::game::sub_section::*;
+use crate::errors::*;
 
 /// Total number of sections in the game.
 pub const SECTION_COUNT : usize = 5;
@@ -97,7 +97,83 @@ impl GameState
         self.sections[section].sub_sections[sub_section].part = part;
     }
 
-    /// Perform a round in the game
+    /// Get a tuple containing the index of a section and sub-section respectively by letter identifier.
+    pub fn get_inds_by_letter(&self, section_char : char, sub_section_char : char) -> (usize, usize)
+    {
+        for (i, section) in self.sections.iter().enumerate()
+        {
+            if section.letter == section_char
+            {
+                for (j, sub_section) in self.sections.iter().enumerate()
+                {
+                    if sub_section.letter == sub_section_char
+                    {
+                        return (i, j);
+                    }
+                }
+            }
+        }
+
+        return (0, 0);
+    }
+
+    /// Perform a round of the game.
+    /// 
+    /// `victim` is a tuple containing the indices of the section and sub-section the victim is checking.
+    /// 
+    /// `killer` is a tuple containing the indices of the section and sub-section the victim is checking.
+    /// 
+    /// Returns a `PlayResult` with either an OutOfBounds error, or a tuple containing the result of the round and
+    /// the car part found by the player (may be None).
+    pub fn play(&mut self, victim : (usize, usize), killer : (usize, usize)) -> PlayResult
+    {
+        // Indices must be within bounds
+        if victim.0 >= SECTION_COUNT || victim.1 >= SUB_SECTION_COUNT || killer.0 >= SECTION_COUNT || killer.1 >= SUB_SECTION_COUNT
+        {
+            return Err(Error::OutOfBounds);
+        }
+
+        // Special check for chase round
+        match self.round_type
+        {
+            // Victim and killer must choose the section that the chase is taking place in
+            RoundType::Chase(section) =>
+            if victim.0 != section || killer.0 != section
+            {
+                return Err(Error::OutOfBounds);
+            }
+            _ => {}
+        }
+
+        // Get the car part in the section
+        let car_part = self.sections[victim.0].sub_sections[victim.1].part;
+
+        // Hold the result of the round
+        let mut round_result = RoundResult::Nothing;
+
+        // If the killer chooses a trapped section, the killer is trapped
+        if self.sections[killer.0].trapped
+        {
+            round_result = RoundResult::TrapTriggered;
+        }
+        // If the killer and the victim chose the same exact place, the killer wins
+        else if victim.0 == killer.0 && victim.1 == killer.1
+        {
+            round_result = RoundResult::Caught;
+        }
+        // If a chase was occuring, the victim evaded
+        else if std::mem::discriminant(&self.round_type) == std::mem::discriminant(&RoundType::Chase(0))
+        {
+            round_result = RoundResult::Evaded;
+        }
+        // If the victim and killer chose the same section, a chase begins
+        else if victim.0 == killer.0
+        {
+            round_result = RoundResult::ChaseBegins;
+        }
+
+        return Ok((round_result, car_part));
+    }
 }
 
 
@@ -122,19 +198,22 @@ pub enum RoundResult
     /// Nothing happens.
     Nothing,
 
-    /// The victim and killer chose the same section, beginning a chase.
-
     /// The killer caught the victim.
-    KillerWin,
-
-    /// The victim found all the parts.
-    VictimWin,
+    Caught,
 
     /// The victim evaded the killer during a chase.
     Evaded,
 
-    /// The victim found a part.
-    /// 
-    /// Includes which part was found
-    PartFound(CarPart),
+    /// The victim and killer chose the same section, beginning a chase.
+    ChaseBegins,
+
+    /// The killer triggered a trap.
+    TrapTriggered
 }
+
+
+
+/// Result type of playing a round of the game.
+/// 
+/// Contains the round result and car part found.
+pub type PlayResult = std::result::Result<(RoundResult, CarPart), Error>;
