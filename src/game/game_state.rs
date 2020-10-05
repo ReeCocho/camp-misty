@@ -1,6 +1,5 @@
 use crate::game::section::*;
 use crate::game::sub_section::*;
-use crate::errors::*;
 
 /// Total number of sections in the game.
 pub const SECTION_COUNT : usize = 5;
@@ -40,7 +39,7 @@ impl GameState
                 SubSection::new(String::from("(B)oat"), 'B', CarPart::None),
                 SubSection::new(String::from("(E)ast shore"), 'E', CarPart::None),
                 SubSection::new(String::from("(W)est shore"), 'W', CarPart::None),
-                SubSection::new(String::from("(S)outh shore)"), 'S', CarPart::None)   
+                SubSection::new(String::from("(S)outh shore"), 'S', CarPart::None)   
             ]);
 
         let abandoned_manor = Section::new(
@@ -98,7 +97,9 @@ impl GameState
     }
 
     /// Get a tuple containing the index of a section and sub-section respectively by letter identifier.
-    pub fn get_inds_by_letter(&self, section_char : char, sub_section_char : char) -> (usize, usize)
+    /// 
+    /// If the indices were not found, will return None.
+    pub fn get_inds_by_letter(&self, section_char : char, sub_section_char : char) -> Option<(usize, usize)>
     {
         for (i, section) in self.sections.iter().enumerate()
         {
@@ -108,13 +109,13 @@ impl GameState
                 {
                     if sub_section.letter == sub_section_char
                     {
-                        return (i, j);
+                        return Some((i, j));
                     }
                 }
             }
         }
 
-        return (0, 0);
+        return None;
     }
 
     /// Perform a round of the game.
@@ -130,7 +131,7 @@ impl GameState
         // Indices must be within bounds
         if victim.0 >= SECTION_COUNT || victim.1 >= SUB_SECTION_COUNT || killer.0 >= SECTION_COUNT || killer.1 >= SUB_SECTION_COUNT
         {
-            return Err(Error::OutOfBounds);
+            return Err(PlayError::OutOfBounds);
         }
 
         // Special check for chase round
@@ -140,7 +141,7 @@ impl GameState
             RoundType::Chase(section) =>
             if victim.0 != section || killer.0 != section
             {
-                return Err(Error::OutOfBounds);
+                return Err(PlayError::OutOfBounds);
             }
             _ => {}
         }
@@ -213,7 +214,14 @@ pub enum RoundResult
 
 
 
+/// Types of errors to occur during play.
+pub enum PlayError
+{
+    /// Some index was out of bounds
+    OutOfBounds
+}
+
 /// Result type of playing a round of the game.
 /// 
 /// Contains the round result and car part found.
-pub type PlayResult = std::result::Result<(RoundResult, CarPart), Error>;
+pub type PlayResult = std::result::Result<(RoundResult, CarPart), PlayError>;
