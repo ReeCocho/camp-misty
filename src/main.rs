@@ -1,4 +1,5 @@
 pub mod game;
+pub mod packets;
 pub mod server;
 pub mod util;
 
@@ -23,7 +24,7 @@ fn main()
         println!("          (Q)uit");
 
         // Determine selection
-        match util::pick_char(&vec!['H', 'J', 'Q'])
+        match util::pick_char(&vec!['H', 'J', 'Q'], "Sorry, that isn't an option.")
         {
             // Host a game
             'H' =>
@@ -179,7 +180,7 @@ fn host_game()
                 println!("There was a problem creating the server.");
                 println!("Would you like to (T)ry again or (R)eturn to the main menu?");
 
-                match util::pick_char(&vec!['T', 'R'])
+                match util::pick_char(&vec!['T', 'R'], "Sorry, that isn't an option.")
                 {
                     'T' => {}
                     'R' => { return; }

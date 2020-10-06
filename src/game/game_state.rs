@@ -96,6 +96,48 @@ impl GameState
         self.sections[section].sub_sections[sub_section].part = part;
     }
 
+    /// Get the index of a section by its letter identifier.
+    pub fn get_section_by_letter(&self, id : char) -> Option<usize>
+    {
+        // Loop over all sections
+        for (i, section) in self.sections.iter().enumerate()
+        {
+            // If the letter matches, choose that one
+            if section.letter == id
+            {
+                return Some(i);
+            }
+        }
+
+        // Didn't find a section
+        return None;
+    }
+
+    /// Get the index of a sub section by its letter identifier.
+    /// 
+    /// The first argument is the index of the section to check and the second argument is the letter of the sub section.
+    pub fn get_sub_section_by_letter(&self, section : usize, id : char) -> Option<usize>
+    {
+        // Out of bounds section
+        if section >= SECTION_COUNT
+        {
+            return None;
+        }
+
+        // Loop over all sub sections in the section
+        for (i, sub_section) in self.sections[section].sub_sections.iter().enumerate()
+        {
+            // If the letter matches, choose that one
+            if sub_section.letter == id
+            {
+                return Some(i);
+            }
+        }
+
+        // Didn't find a sub section
+        return None;
+    }
+
     /// Get a tuple containing the index of a section and sub-section respectively by letter identifier.
     /// 
     /// If the indices were not found, will return None.

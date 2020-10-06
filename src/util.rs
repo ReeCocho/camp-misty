@@ -13,8 +13,12 @@ pub fn read_str() -> String
 
 /// Helper function to have the user pick a character from a list of valid choices.
 /// 
-/// The argument is an array of valid uppercase characters and the function returns the chosen character.
-pub fn pick_char(valid_chars : &Vec<char>) -> char
+/// The first argument is an array of valid uppercase characters to choose from.
+/// 
+/// The second argument is the message to prompt the user with when an invalid character is chosen.
+/// 
+/// The function returns the chosen character.
+pub fn pick_char(valid_chars : &Vec<char>, err_msg : &str) -> char
 {
     // Loop to constantly as for input
     loop
@@ -41,6 +45,6 @@ pub fn pick_char(valid_chars : &Vec<char>) -> char
         }
 
         // Unable to read input
-        println!("Sorry, I wasn't able to understand you.");
+        println!("{}", err_msg);
     }   
 }

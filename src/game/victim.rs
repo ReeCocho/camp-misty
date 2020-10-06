@@ -1,17 +1,17 @@
 use crate::game::game_state::*;
 use crate::util::*;
 
-/// Play a round of the game as a killer by passing in the current game state.
-pub fn play_killer(state : &mut GameState) -> KillerRoundResult
+/// Play a round of the game as a victim, passing in the current game state.
+pub fn play_victim(state : &mut GameState) -> (usize, usize)
 {
-    // Determine the round type
+    // Determine round type
     match state.round_type
     {
-        // Normal round
+        // A normal round
         RoundType::Normal =>
         {
             // Flavor message
-            println!("Paitently, you stalk the grounds of Camp Misty for your victim...");
+            println!("You carefully navigate the grounds of Camp Misty, searching for car parts...");
             println!("Which location would you like to go to?");
 
             // Print all sections and construct vec with all section characters
@@ -30,18 +30,6 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             // a valid section
             let section_ind = state.get_section_by_letter(section_char).expect("Section not found!");
             let section = &mut state.sections[section_ind];
-
-            // Check if they got trapped
-            if section.trapped
-            {
-                // Flavor message
-                println!("Oh no! You were trapped! Looks like you'll have to wait this round out...");
-
-                // Untrap the section
-                section.trapped = false;
-
-                return KillerRoundResult::Trapped;
-            }
 
             // Flavor message
             println!("Which spot in here would you like to check?");
@@ -62,15 +50,15 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             let sub_section_ind = state.get_sub_section_by_letter(section_ind, sub_section_char).expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return KillerRoundResult::Normal((section_ind, sub_section_ind));
+            return (section_ind, sub_section_ind);
         }
 
         // Chase round!
         RoundType::Chase(section) =>
         {
             // Flavor message
-            println!("You have your victim on the run!");
-            println!("Which spot would you like to search for the victim at?");
+            println!("Oh no! The killer is right on your tail!");
+            println!("Which spot would you like hide in?");
 
             // Print all sub sections and construct a vec with all sub section characters
             let mut sub_section_chars = Vec::<char>::new();
@@ -88,19 +76,7 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             let sub_section_ind = state.get_sub_section_by_letter(section, sub_section_char).expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return KillerRoundResult::Normal((section, sub_section_ind));
+            return (section, sub_section_ind);
         }
     }
-}
-
-
-
-/// Killer round result.
-pub enum KillerRoundResult
-{
-    // Normal round (contains section/sub-section tuple)
-    Normal((usize, usize)),
-
-    // The killer was trapped!
-    Trapped
 }

@@ -1,4 +1,5 @@
 use crate::game::game_state::*;
+use crate::util::*;
 
 /// A server that hosts a game
 pub struct Server
@@ -62,6 +63,20 @@ impl Server
         }
 
         return Ok(());
+    }
+
+    /// Play the game!
+    pub fn play(&mut self)
+    {
+        // Host gets to choose if they want to be the killer or the victim
+        println!("Would you like to be the (K)iller or the (V)ictim?");
+        
+        match pick_char(&vec!['K', 'V'], "Sorry, that isn't a valid option.")
+        {
+            'K' => {}
+            'V' => {}
+            _ => panic!("Invalid option chosen!")
+        }
     }
 }
 
