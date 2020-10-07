@@ -10,9 +10,6 @@ pub struct GameState
     // Sections within the game.
     pub sections : [Section; SECTION_COUNT],
 
-    /// Type of round to occur next
-    pub round_type : RoundType,
-
     /// Result of the last round played. Also contains the index
     /// of the section the car part was found at. If no part was
     /// found, it will be equal to SECTION_COUNT.
@@ -94,7 +91,6 @@ impl GameState
                 bonfire,
                 old_forest
             ],
-            round_type : RoundType::Normal,
             last_result : (RoundResult::Nothing, SECTION_COUNT),
             part_count : 0
         }
@@ -212,10 +208,10 @@ impl GameState
         }
 
         // Special check for chase round
-        match self.round_type
+        match self.last_result.0
         {
             // Victim and killer must choose the section that the chase is taking place in
-            RoundType::Chase(section) =>
+            RoundResult::ChaseBegins(section) =>
             if victim.0 != section || killer.0 != section
             {
                 return Err(PlayError::OutOfBounds);
@@ -229,6 +225,10 @@ impl GameState
         // Decrement part count if needed
         if car_part != CarPart::None
         {
+            // Remove the part
+            self.sections[victim.0].sub_sections[victim.1].part = CarPart::None;
+
+            // Decrement part count
             self.part_count -= 1;
         }
 
@@ -254,7 +254,7 @@ impl GameState
             round_result = RoundResult::Caught;
         }
         // If a chase was occuring, the victim evaded (ignore if player is winning)
-        else if self.part_count > 0 && std::mem::discriminant(&self.round_type) == std::mem::discriminant(&RoundType::Chase(0))
+        else if self.part_count > 0 && std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
         {
             round_result = RoundResult::Evaded;
         }
@@ -272,19 +272,6 @@ impl GameState
 }
 
 
-
-/// A type of round in the game
-#[derive(PartialEq)]
-pub enum RoundType
-{
-    /// A normal round where the victim and killer choose a section and subsection to search.
-    Normal,
-
-    /// A chase round where the victim and killer are limited to a single section.
-    ///
-    /// Includes the index of the section where the chase is occuring.
-    Chase(usize)
-}
 
 /// A result of a round in the game
 #[derive(Debug, PartialEq, Clone)]

@@ -5,10 +5,36 @@ use crate::util::*;
 pub fn play_victim(state : &mut GameState) -> (usize, usize)
 {
     // Determine round type
-    match state.round_type
+    match state.last_result.0
     {
+        // Chase round!
+        RoundResult::ChaseBegins(section) =>
+        {
+            // Flavor message
+            println!("Oh no! The killer is right on your tail!");
+            println!("Which spot would you like hide in?");
+
+            // Print all sub sections and construct a vec with all sub section characters
+            let mut sub_section_chars = Vec::<char>::new();
+            for sub_section in &state.sections[section].sub_sections
+            {
+                println!("The {}?", sub_section.name);
+                sub_section_chars.push(sub_section.letter);
+            }
+
+            // Ask user for character
+            let sub_section_char = pick_char(&sub_section_chars, "Sorry, that isn't a spot! Choose a spot.");
+
+            // Get the sub section by character
+            // NOTE: Again, no None checks are needed
+            let sub_section_ind = state.get_sub_section_by_letter(section, sub_section_char).expect("Sub section not found!");
+
+            // Return the section and sub section tuple
+            return (section, sub_section_ind);
+        }
+
         // A normal round
-        RoundType::Normal =>
+        _ =>
         {
             // Flavor message
             println!("You carefully navigate the grounds of Camp Misty, searching for car parts...");
@@ -51,32 +77,6 @@ pub fn play_victim(state : &mut GameState) -> (usize, usize)
 
             // Return the section and sub section tuple
             return (section_ind, sub_section_ind);
-        }
-
-        // Chase round!
-        RoundType::Chase(section) =>
-        {
-            // Flavor message
-            println!("Oh no! The killer is right on your tail!");
-            println!("Which spot would you like hide in?");
-
-            // Print all sub sections and construct a vec with all sub section characters
-            let mut sub_section_chars = Vec::<char>::new();
-            for sub_section in &state.sections[section].sub_sections
-            {
-                println!("The {}?", sub_section.name);
-                sub_section_chars.push(sub_section.letter);
-            }
-
-            // Ask user for character
-            let sub_section_char = pick_char(&sub_section_chars, "Sorry, that isn't a spot! Choose a spot.");
-
-            // Get the sub section by character
-            // NOTE: Again, no None checks are needed
-            let sub_section_ind = state.get_sub_section_by_letter(section, sub_section_char).expect("Sub section not found!");
-
-            // Return the section and sub section tuple
-            return (section, sub_section_ind);
         }
     }
 }
