@@ -11,7 +11,15 @@ pub struct GameState
     pub sections : [Section; SECTION_COUNT],
 
     /// Type of round to occur next
-    pub round_type : RoundType
+    pub round_type : RoundType,
+
+    /// Result of the last round played. Also contains the index
+    /// of the section the car part was found at. If no part was
+    /// found, it will be equal to SECTION_COUNT.
+    pub last_result : (RoundResult, usize),
+
+    /// Total number of hidden parts
+    pub part_count : usize
 }
 
 impl GameState
@@ -86,14 +94,41 @@ impl GameState
                 bonfire,
                 old_forest
             ],
-            round_type : RoundType::Normal
+            round_type : RoundType::Normal,
+            last_result : (RoundResult::Nothing, SECTION_COUNT),
+            part_count : 0
         }
     }
 
-    /// Hide a car part in a sub section by index
+    /// Hide a car part in a sub section by index.
     pub fn hide_part(&mut self, section : usize, sub_section : usize, part : CarPart)
     {
         self.sections[section].sub_sections[sub_section].part = part;
+        self.part_count += 1;
+    }
+
+    /// Place a trap in a section.
+    pub fn place_trap(&mut self, section : usize)
+    {
+        // Place the trap
+        self.sections[section].trapped = true;
+    }
+
+    /// Determine if a section of the map is trapped.
+    pub fn trap_exists(&self) -> bool
+    {
+        // Loop over all sections
+        for section in &self.sections
+        {
+            // Check if the section is trapped
+            if section.trapped
+            {
+                return true;
+            }
+        }
+
+        // No section was found that is trapped
+        return false;
     }
 
     /// Get the index of a section by its letter identifier.
@@ -191,6 +226,12 @@ impl GameState
         // Get the car part in the section
         let car_part = self.sections[victim.0].sub_sections[victim.1].part;
 
+        // Decrement part count if needed
+        if car_part != CarPart::None
+        {
+            self.part_count -= 1;
+        }
+
         // Hold the result of the round
         let mut round_result = RoundResult::Nothing;
 
@@ -199,23 +240,34 @@ impl GameState
         {
             round_result = RoundResult::TrapTriggered;
         }
-        // If the killer and the victim chose the same exact place, the killer wins
-        else if victim.0 == killer.0 && victim.1 == killer.1
+
+        // If the victim found all parts, they win (priority over trapping)
+        if self.part_count == 0
+        {
+            round_result = RoundResult::AllPartsFound;
+        }
+
+        // If the killer and the victim chose the same exact place, and the killer isn't trapped, the killer wins
+        // (priority over player winning)
+        if self.last_result.0 != RoundResult::TrapTriggered && victim.0 == killer.0 && victim.1 == killer.1
         {
             round_result = RoundResult::Caught;
         }
-        // If a chase was occuring, the victim evaded
-        else if std::mem::discriminant(&self.round_type) == std::mem::discriminant(&RoundType::Chase(0))
+        // If a chase was occuring, the victim evaded (ignore if player is winning)
+        else if self.part_count > 0 && std::mem::discriminant(&self.round_type) == std::mem::discriminant(&RoundType::Chase(0))
         {
             round_result = RoundResult::Evaded;
         }
-        // If the victim and killer chose the same section, a chase begins
+        // If the victim and killer chose the same section, a chase begins (priority over player winning)
         else if victim.0 == killer.0
         {
-            round_result = RoundResult::ChaseBegins;
+            round_result = RoundResult::ChaseBegins(victim.0);
         }
 
-        return Ok((round_result, car_part));
+        // Update result
+        self.last_result = (round_result.clone(), if car_part != CarPart::None { victim.0 } else { SECTION_COUNT });
+
+        return Ok((round_result, (car_part, victim.0)));
     }
 }
 
@@ -235,7 +287,7 @@ pub enum RoundType
 }
 
 /// A result of a round in the game
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum RoundResult
 {
     /// Nothing happens.
@@ -244,11 +296,16 @@ pub enum RoundResult
     /// The killer caught the victim.
     Caught,
 
+    /// The victim found all the parts.
+    AllPartsFound,
+
     /// The victim evaded the killer during a chase.
     Evaded,
 
     /// The victim and killer chose the same section, beginning a chase.
-    ChaseBegins,
+    /// 
+    /// Includes the index of the section where the chase is going to take place.
+    ChaseBegins(usize),
 
     /// The killer triggered a trap.
     TrapTriggered
@@ -257,6 +314,7 @@ pub enum RoundResult
 
 
 /// Types of errors to occur during play.
+#[derive(Debug)]
 pub enum PlayError
 {
     /// Some index was out of bounds
@@ -265,5 +323,5 @@ pub enum PlayError
 
 /// Result type of playing a round of the game.
 /// 
-/// Contains the round result and car part found.
-pub type PlayResult = std::result::Result<(RoundResult, CarPart), PlayError>;
+/// Contains the round result and car part found including what section it was found in.
+pub type PlayResult = std::result::Result<(RoundResult, (CarPart, usize)), PlayError>;

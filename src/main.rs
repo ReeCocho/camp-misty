@@ -6,9 +6,13 @@ pub mod util;
 use game::game_state::*;
 use game::section::*;
 use game::sub_section::*;
+use game::killer_ai::*;
+use game::victim_ai::*;
 use server::*;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 fn main() 
 {
@@ -29,11 +33,52 @@ fn main()
             // Host a game
             'H' =>
             {
-                // Host game
-                host_game();
+                // Total number of wins of each player type
+                let mut killer_wins : usize = 0;
+                let mut victim_wins : usize = 0;
 
-                // Print title screen for main menu
-                print_title_screen();
+                // Play 1,000 matches
+                for i in 0..10000
+                {
+                    // Create a game state
+                    let mut state = Rc::new(RefCell::new(GameState::new()));
+
+                    // Create AI plays
+                    let mut killer = KillerAI::new(state.clone());
+                    let mut victim = VictimAI::new(state.clone());
+
+                    // Play game until there is a winner
+                    loop
+                    {
+                        // Have each AI make a move
+                        let killer_move = killer.play();
+                        let victim_move = victim.play();
+
+                        // Submit moves to the game state
+                        let res = state.borrow_mut().play(victim_move, killer_move).expect("Something went wrong during play");
+
+                        // Break if someone won
+                        if res.0 == game::game_state::RoundResult::Caught
+                        {
+                            killer_wins += 1;
+                            break;
+                        }
+                        else if res.0 == game::game_state::RoundResult::AllPartsFound
+                        {
+                            victim_wins += 1;
+                            break;
+                        }
+                    }
+                }
+
+                // Compute win ratio
+                println!("V/K Win Ratio: {}", (victim_wins as f32) / (killer_wins as f32));
+
+                // // Host game
+                // host_game();
+
+                // // Print title screen for main menu
+                // print_title_screen();
             }
 
             // Join a game
