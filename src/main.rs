@@ -4,13 +4,9 @@ pub mod server;
 pub mod util;
 
 use game::game_state::*;
-use game::section::*;
-use game::sub_section::*;
 use game::killer_ai::*;
 use game::victim_ai::*;
 use server::*;
-use rand::seq::SliceRandom;
-use rand::Rng;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -43,41 +39,6 @@ fn main()
                     // Create a game state
                     let mut state = Rc::new(RefCell::new(GameState::new()));
 
-                    // Take a list of all car parts and shuffle them
-                    let car_parts = [
-                        CarPart::Battery,
-                        CarPart::Headlights,
-                        CarPart::Gasoline,
-                        CarPart::SparkPlug];
-                    
-                    // Must be one less part than the number of sections
-                    // assert_eq!(car_parts.len(), SECTION_COUNT - 1);
-
-                    // Create a list of indices
-                    let mut part_loc_inds : Vec<usize> = (0..SECTION_COUNT).collect();
-
-                    // Remove two random indices from the list (this indicates which section doesn't have a part)
-                    part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
-                    //part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
-                    //part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
-
-                    // Shuffle the index. Then, we can distribute the parts randomly among the sections
-                    part_loc_inds.shuffle(&mut rand::thread_rng());
-
-                    // Distribute car parts
-                    let mut part_index : usize = 0;
-                    for i in part_loc_inds
-                    {
-                        // Randomly choose which sub section gets the part
-                        let rand_ind = rand::thread_rng().gen_range(0, SUB_SECTION_COUNT);
-
-                        // Place the part in the sub section
-                        state.borrow_mut().hide_part(i, rand_ind, car_parts[part_index]);
-
-                        // Increment part index
-                        part_index += 1;
-                    }
-
                     // Create AI plays
                     let mut killer = KillerAI::new(state.clone());
                     let mut victim = VictimAI::new(state.clone());
@@ -94,6 +55,17 @@ fn main()
 
                         // Submit moves to the game state
                         let res = state.borrow_mut().play(victim_move, killer_move).expect("Something went wrong during play");
+
+                        // match res.0
+                        // {
+                        //     game::game_state::RoundResult::Nothing => {println!("Nothing");}
+                        //     game::game_state::RoundResult::Caught => {println!("Caught");}
+                        //     game::game_state::RoundResult::Wounded => {println!("Wounded");}
+                        //     game::game_state::RoundResult::AllPartsFound => {println!("AllPartsFound");}
+                        //     game::game_state::RoundResult::Evaded => {println!("Evaded");}
+                        //     game::game_state::RoundResult::ChaseBegins(_) => {println!("ChaseBegins");}
+                        //     game::game_state::RoundResult::TrapTriggered => {println!("TrapTriggered");}
+                        // }
 
                         // Increment counter
                         count += 1;

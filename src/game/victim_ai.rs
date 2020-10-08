@@ -1,9 +1,10 @@
-use crate::game::game_state::*;
-use crate::game::section::*;
-use crate::game::sub_section::*;
 use rand::Rng;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use crate::game::game_state::*;
+use crate::game::section::*;
+use crate::game::sub_section::*;
 
 /// An AI version of a victim to be used for testing/single player.
 pub struct VictimAI
@@ -89,7 +90,7 @@ impl VictimAI
         let tup = match last_result.0
         {
             // Normal round logic
-            RoundResult::Nothing | RoundResult::TrapTriggered | RoundResult::Evaded =>
+            RoundResult::Nothing | RoundResult::TrapTriggered | RoundResult::Evaded | RoundResult::Wounded =>
             {
                 // Choose a random section/sub-section tuple from our list of unvisited tuples
                 let tup_ind = rand::thread_rng().gen_range(0, self.unvisited.len());
@@ -136,6 +137,7 @@ impl VictimAI
                     }
                 }
 
+                // Only remove from unvisited if we are visiting a new place
                 if tup_to_remove != self.unvisited.len()
                 {
                     self.unvisited.remove(tup_to_remove);

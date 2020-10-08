@@ -1,3 +1,6 @@
+use rand::seq::SliceRandom;
+use rand::Rng;
+
 use crate::game::section::*;
 use crate::game::sub_section::*;
 
@@ -16,7 +19,10 @@ pub struct GameState
     pub last_result : (RoundResult, usize),
 
     /// Total number of hidden parts
-    pub part_count : usize
+    pub part_count : usize,
+
+    /// Flag indicating the victim is wounded
+    pub victim_is_wounded : bool
 }
 
 impl GameState
@@ -81,7 +87,7 @@ impl GameState
             ]);
         
         // Construct game state
-        GameState
+        let mut state = GameState
         {
             sections : 
             [
@@ -92,8 +98,38 @@ impl GameState
                 old_forest
             ],
             last_result : (RoundResult::Nothing, SECTION_COUNT),
-            part_count : 0
+            part_count : 0,
+            victim_is_wounded : false
+        };
+
+        // Take a list of all car parts and shuffle them
+        let car_parts = [
+            CarPart::Battery,
+            CarPart::Headlights,
+            CarPart::SparkPlug,
+            CarPart::Gasoline];
+        
+        // Create a list of indices
+        let mut part_loc_inds : Vec<usize> = (0..SECTION_COUNT).collect();
+
+        // Remove one random index from the list (this indicates which section doesn't have a part)
+        part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
+
+        // Shuffle the index. Then, we can distribute the parts randomly among the sections
+        part_loc_inds.shuffle(&mut rand::thread_rng());
+
+        // Distribute car parts
+        for (part_index, section_index) in part_loc_inds.into_iter().enumerate()
+        {
+            // Randomly choose which sub section gets the part
+            let rand_ind = rand::thread_rng().gen_range(0, SUB_SECTION_COUNT);
+
+            // Place the part in the sub section
+            state.hide_part(section_index, rand_ind, car_parts[part_index]);
         }
+
+        // Return new game state
+        return state;
     }
 
     /// Hide a car part in a sub section by index.
@@ -174,20 +210,26 @@ impl GameState
     /// If the indices were not found, will return None.
     pub fn get_inds_by_letter(&self, section_char : char, sub_section_char : char) -> Option<(usize, usize)>
     {
+        // Loop over every section
         for (i, section) in self.sections.iter().enumerate()
         {
+            // If the section is the one we are looking for...
             if section.letter == section_char
             {
+                // Loop over all sub sections in the section
                 for (j, sub_section) in self.sections.iter().enumerate()
                 {
+                    // If the sub section is the one we are looking for...
                     if sub_section.letter == sub_section_char
                     {
+                        // Return that section/sub-section pair
                         return Some((i, j));
                     }
                 }
             }
         }
 
+        // Couldn't find the section/sub-section pair
         return None;
     }
 
@@ -202,7 +244,10 @@ impl GameState
     pub fn play(&mut self, victim : (usize, usize), killer : (usize, usize)) -> PlayResult
     {
         // Indices must be within bounds
-        if victim.0 >= SECTION_COUNT || victim.1 >= SUB_SECTION_COUNT || killer.0 >= SECTION_COUNT || killer.1 >= SUB_SECTION_COUNT
+        if  victim.0 >= SECTION_COUNT || 
+            victim.1 >= SUB_SECTION_COUNT || 
+            killer.0 >= SECTION_COUNT || 
+            killer.1 >= SUB_SECTION_COUNT
         {
             return Err(PlayError::OutOfBounds);
         }
@@ -216,13 +261,15 @@ impl GameState
             {
                 return Err(PlayError::OutOfBounds);
             }
+
+            // Ignore all other cases
             _ => {}
         }
 
         // Get the car part in the section
         let car_part = self.sections[victim.0].sub_sections[victim.1].part;
 
-        // Decrement part count if needed
+        // Get rid of part if needed
         if car_part != CarPart::None
         {
             // Remove the part
@@ -246,15 +293,27 @@ impl GameState
         {
             round_result = RoundResult::AllPartsFound;
         }
-
+        
         // If the killer and the victim chose the same exact place, and the killer isn't trapped, the killer wins
-        // (priority over player winning)
-        if self.last_result.0 != RoundResult::TrapTriggered && victim.0 == killer.0 && victim.1 == killer.1
+        if  self.last_result.0 != RoundResult::TrapTriggered && 
+            victim.0 == killer.0 && 
+            victim.1 == killer.1
         {
-            round_result = RoundResult::Caught;
+            // If the victim has already been wounded, they are caught (priority over winning)
+            if self.victim_is_wounded
+            {
+                round_result = RoundResult::Caught;
+            }
+            // If the victim hasn't been wounded yet, wound them (unless the victim is winning, in which case do nothing)
+            else if self.part_count != 0
+            {
+                self.victim_is_wounded = true;
+                round_result = RoundResult::Wounded;
+            }
         }
         // If a chase was occuring, the victim evaded (ignore if player is winning)
-        else if self.part_count > 0 && std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
+        else if self.part_count > 0 && 
+                std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
         {
             round_result = RoundResult::Evaded;
         }
@@ -282,6 +341,9 @@ pub enum RoundResult
 
     /// The killer caught the victim.
     Caught,
+
+    /// The killer wounded the victim.
+    Wounded,
 
     /// The victim found all the parts.
     AllPartsFound,

@@ -1,8 +1,9 @@
-use crate::game::game_state::*;
-use crate::game::section::*;
 use rand::Rng;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use crate::game::game_state::*;
+use crate::game::section::*;
 
 /// An AI version of the killer to be used in testing/single player
 pub struct KillerAI
@@ -53,7 +54,7 @@ impl<'a> KillerAI
         return match last_result.0
         {
             // Normal round logic
-            RoundResult::Nothing | RoundResult::Evaded =>
+            RoundResult::Nothing | RoundResult::Evaded | RoundResult::Wounded =>
             {
                 // Choose a random section from our list of valid sections
                 let sec_ind = rand::thread_rng().gen_range(0, self.sections.len());
