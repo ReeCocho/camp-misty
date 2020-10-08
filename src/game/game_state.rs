@@ -374,3 +374,60 @@ pub enum PlayError
 /// 
 /// Contains the round result and car part found including what section it was found in.
 pub type PlayResult = std::result::Result<(RoundResult, (CarPart, usize)), PlayError>;
+
+
+
+/// Testing for game state.
+#[cfg(test)]
+mod test
+{
+    use crate::game::killer_ai::*;
+    use crate::game::victim_ai::*;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    /// Runs a simulation of the game with AI players.
+    #[test]
+    fn simulation()
+    {
+        // Number of simulated games to play
+        const GAME_COUNT : usize = 1000;
+
+        // Play matches
+        for _ in 0..GAME_COUNT
+        {
+            // Create a game state
+            let state = Rc::new(RefCell::new(super::GameState::new()));
+
+            // Create AI plays
+            let mut killer = KillerAI::new(state.clone());
+            let mut victim = VictimAI::new(state.clone());
+
+            // Play game until there is a winner
+            loop
+            {
+                // Have each AI make a move
+                let killer_move = killer.play();
+                let victim_move = victim.play();
+
+                // Submit moves to the game state
+                let res = state.borrow_mut().play(victim_move, killer_move).expect("Something went wrong during play");
+
+                // Place trap if evaded
+                if res.0 == super::RoundResult::Evaded
+                {
+                    victim.place_trap();
+                }
+                // Break if someone won
+                else if res.0 == super::RoundResult::Caught
+                {
+                    break;
+                }
+                else if res.0 == super::RoundResult::AllPartsFound
+                {
+                    break;
+                }
+            }
+        }
+    }
+}
