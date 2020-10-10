@@ -1,3 +1,5 @@
+use serde::{Serialize, Deserialize};
+
 /// A sub-section contained within a section.
 pub struct SubSection
 {
@@ -31,7 +33,7 @@ impl SubSection
 }
 
 /// A car part the victim might be looking for.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum CarPart
 {
     None,

@@ -1,6 +1,8 @@
 use serde::{Serialize, Deserialize};
 use byteorder::{ByteOrder, LittleEndian};
 use std::io::prelude::*;
+use crate::game::sub_section::*;
+use crate::game::game_state::*;
 
 /// Function to write the contents of a structure over a TCP connection.
 pub fn write_over_tcp<T>(stream : &mut std::net::TcpStream, data : &T) where T : Serialize
@@ -39,7 +41,7 @@ pub fn read_over_tcp<T : serde::de::DeserializeOwned>(stream : &mut std::net::Tc
     let mut pos : usize = 0;
     while pos < 4
     {
-        match stream.read(&mut buf)
+        match stream.read(&mut buf[pos..])
         {
             Ok(n) => { pos += n; }
             Err(_) => panic!("Error reading data over TCP stream!")
@@ -67,7 +69,7 @@ pub fn read_over_tcp<T : serde::de::DeserializeOwned>(stream : &mut std::net::Tc
 }
 
 /// An enum used to identify a type of player (either a victim or killer)
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum PlayerType
 {
     /// Killer player.
@@ -77,9 +79,35 @@ pub enum PlayerType
     Victim
 }
 
-/// An enum used to communicate the move a victim has made during the game.
+/// A structure used to describe the state of the game to a client.
 #[derive(Serialize, Deserialize)]
-pub enum VictimPacket
+pub struct GameStatePacket
 {
-
+    // List of car parts and the spots they are hidden in.
+    pub hidden_parts : [((u32, u32), CarPart); SECTION_COUNT - 1]
 }
+
+impl GameStatePacket
+{
+    /// Constructor.
+    pub fn new() -> GameStatePacket
+    {
+        GameStatePacket
+        {
+            hidden_parts : 
+            [
+                ((0, 0), CarPart::None),
+                ((0, 0), CarPart::None),
+                ((0, 0), CarPart::None),
+                ((0, 0), CarPart::None)
+            ]
+        }
+    }
+}
+
+/// A structure used to communicate the move made during the game.
+#[derive(Serialize, Deserialize)]
+pub struct MovePacket(pub u32, pub u32);
+
+/// A trap used to communicate where the victim has placed a trap.
+pub type TrapPacket = u32;

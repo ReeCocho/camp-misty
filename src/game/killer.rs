@@ -2,23 +2,79 @@ use crate::game::game_state::*;
 use crate::util::*;
 
 /// Play a round of the game as a killer by passing in the current game state.
-pub fn play_killer(state : &mut GameState) -> KillerRoundResult
+pub fn play_killer(state : &mut GameState) -> (usize, usize)
 {
+    // Convenience function for special print out
+    let found_part_msg = 
+    || if state.last_result.1 != SECTION_COUNT 
+    { 
+        println!(
+            "Oh no! The victim found a car part in the {}!", 
+            state.sections[state.last_result.1].name); 
+    };
+
+    // Print out a special message depending on what happened last round
+    match state.last_result.0
+    {
+        RoundResult::AllPartsFound => 
+        {
+            println!("Oh no! The victim found all the car parts and was able to escape! You lose!");
+        }
+
+        RoundResult::Caught => 
+        {
+            println!("Yes! You caught the victim, sinking your blade deep into their back... You win!");
+        }
+
+        RoundResult::ChaseBegins(section) => 
+        {
+            found_part_msg();
+            println!(
+                "Muahaha! You have the victim in your sights! Where in the {} would you like to search for them?", 
+                state.sections[section].name);
+        }
+
+        RoundResult::Evaded => 
+        {
+            found_part_msg();
+            println!("No, no, no! The victim got away!");
+            println!("Now, which location would you like to check?");
+        }
+
+        RoundResult::Nothing => 
+        {
+            found_part_msg();
+            println!("Paitently, you stalk the grounds of Camp Misty for your victim...");
+            println!("Now, which location would you like to check?");
+        }
+
+        RoundResult::TrapTriggered => 
+        {
+            found_part_msg();
+            println!("Oh no! You stepped right into the victims trap! You spent the round getting yourself out.");
+            println!("Now, which location would you like to check?");
+        }
+
+        RoundResult::Wounded => 
+        {
+            found_part_msg();
+            println!("Muahaha! You found the victim and were able to get a good swing in.");
+            println!("They are wounded. If you find them again, you win...");
+            println!("Now, which location would you like to check?");
+        }
+    }
+
     // Determine the round type
     match state.last_result.0
     {
         // Chase round!
         RoundResult::ChaseBegins(section) =>
         {
-            // Flavor message
-            println!("You have your victim on the run!");
-            println!("Which spot would you like to search for the victim at?");
-
             // Print all sub sections and construct a vec with all sub section characters
             let mut sub_section_chars = Vec::<char>::new();
             for sub_section in &state.sections[section].sub_sections
             {
-                println!("The {}?", sub_section.name);
+                println!("{}?", sub_section.name);
                 sub_section_chars.push(sub_section.letter);
             }
 
@@ -30,21 +86,17 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             let sub_section_ind = state.get_sub_section_by_letter(section, sub_section_char).expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return KillerRoundResult::Normal((section, sub_section_ind));
+            return (section, sub_section_ind);
         }
 
         // Normal round
         _ =>
         {
-            // Flavor message
-            println!("Paitently, you stalk the grounds of Camp Misty for your victim...");
-            println!("Which location would you like to go to?");
-
             // Print all sections and construct vec with all section characters
             let mut section_chars = Vec::<char>::new();
             for section in &state.sections
             {
-                println!("The {}?", section.name);
+                println!("{}?", section.name);
                 section_chars.push(section.letter);
             }
 
@@ -57,18 +109,6 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             let section_ind = state.get_section_by_letter(section_char).expect("Section not found!");
             let section = &mut state.sections[section_ind];
 
-            // Check if they got trapped
-            if section.trapped
-            {
-                // Flavor message
-                println!("Oh no! You were trapped! Looks like you'll have to wait this round out...");
-
-                // Untrap the section
-                section.trapped = false;
-
-                return KillerRoundResult::Trapped;
-            }
-
             // Flavor message
             println!("Which spot in here would you like to check?");
 
@@ -76,7 +116,7 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             let mut sub_section_chars = Vec::<char>::new();
             for sub_section in &section.sub_sections
             {
-                println!("The {}?", sub_section.name);
+                println!("{}?", sub_section.name);
                 sub_section_chars.push(sub_section.letter);
             }
 
@@ -88,19 +128,7 @@ pub fn play_killer(state : &mut GameState) -> KillerRoundResult
             let sub_section_ind = state.get_sub_section_by_letter(section_ind, sub_section_char).expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return KillerRoundResult::Normal((section_ind, sub_section_ind));
+            return (section_ind, sub_section_ind);
         }
     }
-}
-
-
-
-/// Killer round result.
-pub enum KillerRoundResult
-{
-    // Normal round (contains section/sub-section tuple)
-    Normal((usize, usize)),
-
-    // The killer was trapped!
-    Trapped
 }

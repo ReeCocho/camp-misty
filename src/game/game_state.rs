@@ -32,7 +32,7 @@ impl GameState
     {
         // Create sections
         let cabin = Section::new(
-            String::from("(C)abin"), 
+            String::from("The (C)abin"), 
             'C',
             [
                 SubSection::new(String::from("(B)edroom"), 'B', CarPart::None),
@@ -54,7 +54,7 @@ impl GameState
             ]);
 
         let abandoned_manor = Section::new(
-            String::from("(A)bandoned manor"), 
+            String::from("The (A)bandoned manor"), 
             'A',
             [
                 SubSection::new(String::from("(M)aster bedroom"), 'M', CarPart::None),
@@ -65,7 +65,7 @@ impl GameState
             ]);
 
         let bonfire = Section::new(
-            String::from("(B)onfire"), 
+            String::from("The (B)onfire"), 
             'B',
             [
                 SubSection::new(String::from("(S)hrubs"), 'S', CarPart::None),
@@ -76,7 +76,7 @@ impl GameState
             ]);
 
         let old_forest = Section::new(
-            String::from("(O)ld forest"), 
+            String::from("The (O)ld forest"), 
             'O',
             [
                 SubSection::new(String::from("(P)ond"), 'P', CarPart::None),
@@ -102,6 +102,13 @@ impl GameState
             victim_is_wounded : false
         };
 
+        // Return new game state
+        return state;
+    }
+
+    /// Generate random game state.
+    pub fn gen_state(&mut self)
+    {
         // Take a list of all car parts and shuffle them
         let car_parts = [
             CarPart::Battery,
@@ -125,11 +132,8 @@ impl GameState
             let rand_ind = rand::thread_rng().gen_range(0, SUB_SECTION_COUNT);
 
             // Place the part in the sub section
-            state.hide_part(section_index, rand_ind, car_parts[part_index]);
+            self.hide_part(section_index, rand_ind, car_parts[part_index]);
         }
-
-        // Return new game state
-        return state;
     }
 
     /// Hide a car part in a sub section by index.
@@ -282,45 +286,47 @@ impl GameState
         // Hold the result of the round
         let mut round_result = RoundResult::Nothing;
 
-        // If the killer chooses a trapped section, the killer is trapped
-        if self.sections[killer.0].trapped
-        {
-            round_result = RoundResult::TrapTriggered;
-        }
-
-        // If the victim found all parts, they win (priority over trapping)
+        // If the victim found all parts, they win
         if self.part_count == 0
         {
             round_result = RoundResult::AllPartsFound;
         }
-        
-        // If the killer and the victim chose the same exact place, and the killer isn't trapped, the killer wins
-        if  self.last_result.0 != RoundResult::TrapTriggered && 
-            victim.0 == killer.0 && 
-            victim.1 == killer.1
+        // If the killer chooses a trapped section, the killer is trapped
+        else if self.sections[killer.0].trapped
         {
-            // If the victim has already been wounded, they are caught (priority over winning)
-            if self.victim_is_wounded
-            {
-                round_result = RoundResult::Caught;
-            }
-            // If the victim hasn't been wounded yet, wound them (unless the victim is winning, in which case do nothing)
-            else if self.part_count != 0
-            {
-                self.victim_is_wounded = true;
-                round_result = RoundResult::Wounded;
-            }
+            self.sections[killer.0].trapped = false;
+            round_result = RoundResult::TrapTriggered;
         }
-        // If a chase was occuring, the victim evaded (ignore if player is winning)
-        else if self.part_count > 0 && 
-                std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
+        // Something else might happen
+        else
         {
-            round_result = RoundResult::Evaded;
-        }
-        // If the victim and killer chose the same section, a chase begins (priority over player winning)
-        else if victim.0 == killer.0
-        {
-            round_result = RoundResult::ChaseBegins(victim.0);
+            // If the killer and the victim chose the same exact place the killer wins
+            if  victim.0 == killer.0 && 
+                victim.1 == killer.1
+            {
+                // If the victim has already been wounded, they are caught (priority over winning)
+                if self.victim_is_wounded
+                {
+                    round_result = RoundResult::Caught;
+                }
+                // If the victim hasn't been wounded yet, wound them (unless the victim is winning, in which case do nothing)
+                else if self.part_count != 0
+                {
+                    self.victim_is_wounded = true;
+                    round_result = RoundResult::Wounded;
+                }
+            }
+            // If a chase was occuring, the victim evaded (ignore if player is winning)
+            else if self.part_count > 0 && 
+                    std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
+            {
+                round_result = RoundResult::Evaded;
+            }
+            // If the victim and killer chose the same section, a chase begins (priority over player winning)
+            else if victim.0 == killer.0
+            {
+                round_result = RoundResult::ChaseBegins(victim.0);
+            }
         }
 
         // Update result
@@ -398,6 +404,7 @@ mod test
         {
             // Create a game state
             let state = Rc::new(RefCell::new(super::GameState::new()));
+            state.borrow_mut().gen_state();
 
             // Create AI plays
             let mut killer = KillerAI::new(state.clone());
