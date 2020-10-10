@@ -181,6 +181,7 @@ impl Server
                     {
                         if sub_section.part != CarPart::None
                         {
+                            println!("Part {} {}", i, j);
                             state_packet.hidden_parts[state_packet_ind] = 
                             (
                                 (i as u32, j as u32),

@@ -114,25 +114,26 @@ impl GameState
             CarPart::Battery,
             CarPart::Headlights,
             CarPart::SparkPlug,
+            CarPart::Gasoline,
             CarPart::Gasoline];
         
         // Create a list of indices
         let mut part_loc_inds : Vec<usize> = (0..SECTION_COUNT).collect();
 
         // Remove one random index from the list (this indicates which section doesn't have a part)
-        part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
+        // part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
 
         // Shuffle the index. Then, we can distribute the parts randomly among the sections
         part_loc_inds.shuffle(&mut rand::thread_rng());
 
         // Distribute car parts
-        for (part_index, section_index) in part_loc_inds.into_iter().enumerate()
+        for (part_index, section_index) in part_loc_inds.iter().enumerate()
         {
             // Randomly choose which sub section gets the part
             let rand_ind = rand::thread_rng().gen_range(0, SUB_SECTION_COUNT);
 
             // Place the part in the sub section
-            self.hide_part(section_index, rand_ind, car_parts[part_index]);
+            self.hide_part(*section_index, rand_ind, car_parts[part_index]);
         }
     }
 
@@ -291,16 +292,16 @@ impl GameState
         {
             round_result = RoundResult::AllPartsFound;
         }
-        // If the killer chooses a trapped section, the killer is trapped
-        else if self.sections[killer.0].trapped
+
+        // If the killer chooses a trapped section and the victim isn't winning the killer is trapped
+        if self.sections[killer.0].trapped && round_result != RoundResult::AllPartsFound
         {
             self.sections[killer.0].trapped = false;
             round_result = RoundResult::TrapTriggered;
         }
-        // Something else might happen
         else
         {
-            // If the killer and the victim chose the same exact place the killer wins
+            // If the killer and the victim chose the same exact place...
             if  victim.0 == killer.0 && 
                 victim.1 == killer.1
             {
@@ -310,20 +311,21 @@ impl GameState
                     round_result = RoundResult::Caught;
                 }
                 // If the victim hasn't been wounded yet, wound them (unless the victim is winning, in which case do nothing)
-                else if self.part_count != 0
+                else if round_result != RoundResult::AllPartsFound
                 {
                     self.victim_is_wounded = true;
                     round_result = RoundResult::Wounded;
                 }
             }
             // If a chase was occuring, the victim evaded (ignore if player is winning)
-            else if self.part_count > 0 && 
-                    std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
+            else if 
+                round_result != RoundResult::AllPartsFound && 
+                std::mem::discriminant(&self.last_result.0) == std::mem::discriminant(&RoundResult::ChaseBegins(0))
             {
                 round_result = RoundResult::Evaded;
             }
             // If the victim and killer chose the same section, a chase begins (priority over player winning)
-            else if victim.0 == killer.0
+            else if victim.0 == killer.0 && round_result != RoundResult::AllPartsFound
             {
                 round_result = RoundResult::ChaseBegins(victim.0);
             }
@@ -397,7 +399,11 @@ mod test
     fn simulation()
     {
         // Number of simulated games to play
-        const GAME_COUNT : usize = 1000;
+        const GAME_COUNT : usize = 10000;
+
+        // Number of wins for each player type (used to compute win to loss ratio)
+        let mut victim_wins : usize = 0;
+        let mut killer_wins : usize = 0;
 
         // Play matches
         for _ in 0..GAME_COUNT
@@ -423,18 +429,23 @@ mod test
                 // Place trap if evaded
                 if res.0 == super::RoundResult::Evaded
                 {
-                    victim.place_trap();
+                    // victim.place_trap();
                 }
                 // Break if someone won
                 else if res.0 == super::RoundResult::Caught
                 {
+                    killer_wins += 1;
                     break;
                 }
                 else if res.0 == super::RoundResult::AllPartsFound
                 {
+                    victim_wins += 1;
                     break;
                 }
             }
         }
+
+        // Print out win to loss ratio
+        println!("V/K win ratio = {}", (victim_wins as f32) / (killer_wins as f32));
     }
 }

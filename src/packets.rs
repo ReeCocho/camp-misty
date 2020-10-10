@@ -84,7 +84,7 @@ pub enum PlayerType
 pub struct GameStatePacket
 {
     // List of car parts and the spots they are hidden in.
-    pub hidden_parts : [((u32, u32), CarPart); SECTION_COUNT - 1]
+    pub hidden_parts : [((u32, u32), CarPart); SECTION_COUNT]
 }
 
 impl GameStatePacket
@@ -96,6 +96,7 @@ impl GameStatePacket
         {
             hidden_parts : 
             [
+                ((0, 0), CarPart::None),
                 ((0, 0), CarPart::None),
                 ((0, 0), CarPart::None),
                 ((0, 0), CarPart::None),
