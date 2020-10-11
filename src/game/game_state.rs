@@ -31,7 +31,7 @@ impl GameState
     {
         // Create sections
         let cabin = Section::new(
-            String::from("The (C)abin"), 
+            String::from("(C)abin"), 
             'C',
             [
                 SubSection::new(String::from("(B)edroom"), 'B', false),
@@ -53,7 +53,7 @@ impl GameState
             ]);
 
         let abandoned_manor = Section::new(
-            String::from("The (A)bandoned manor"), 
+            String::from("(A)bandoned manor"), 
             'A',
             [
                 SubSection::new(String::from("(M)aster bedroom"), 'M', false),
@@ -64,7 +64,7 @@ impl GameState
             ]);
 
         let bonfire = Section::new(
-            String::from("The (B)onfire"), 
+            String::from("(B)onfire"), 
             'B',
             [
                 SubSection::new(String::from("(S)hrubs"), 'S', false),
@@ -75,7 +75,7 @@ impl GameState
             ]);
 
         let old_forest = Section::new(
-            String::from("The (O)ld forest"), 
+            String::from("(O)ld forest"), 
             'O',
             [
                 SubSection::new(String::from("(P)ond"), 'P', false),

@@ -149,6 +149,10 @@ impl Client
 
         // Game loop
         while !net_play(player_type, &mut self.state, &mut self.server) {}
+
+        // Return to title
+        println!("Enter anything to return to the title screen...");
+        read_str();
     }
 }
 

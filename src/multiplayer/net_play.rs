@@ -2,6 +2,7 @@ use crate::game::game_state::*;
 use super::packets::*;
 use crate::game::victim_user::*;
 use crate::game::killer_user::*;
+use crate::util::*;
 
 /// Play the game with another user over the internet.
 /// 
@@ -66,11 +67,13 @@ pub fn net_play(player_type : PlayerType, state : &mut GameState, stream : &mut 
     {
         if player_type == PlayerType::Victim
         {
-            println!("Noooo!!! The killer slices your back and you fall dead... You lose!");
+            println!("Noooo!!! The killer slices your back and you fall dead...");
+            print_lose();
         }
         else
         {
-            println!("Muahahahaha!!! You slice the victim across their back, and they fall dead... You win!");
+            println!("Muahahahaha!!! You slice the victim across their back, and they fall dead...");
+            print_win();
         }
 
         return true;
@@ -80,11 +83,13 @@ pub fn net_play(player_type : PlayerType, state : &mut GameState, stream : &mut 
     {
         if player_type == PlayerType::Victim
         {
-            println!("Yes!!! You found all of the car parts and are able to escape Camp Misty! You win!");
+            println!("Yes!!! You found all of the car parts and are able to escape Camp Misty!");
+            print_win();
         }
         else
         {
             println!("No!!! The victim found all the car parts and escaped Camp Misty!");
+            print_lose();
         }
 
         return true;
