@@ -23,6 +23,12 @@ pub struct GameState {
     pub victim_is_wounded: bool,
 }
 
+impl Default for GameState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameState {
     /// Constructor.
     pub fn new() -> GameState {
@@ -87,16 +93,12 @@ impl GameState {
             ],
         );
 
-        // Construct game state
-        let state = GameState {
+        GameState {
             sections: [cabin, lake_misty, abandoned_manor, bonfire, old_forest],
             last_result: (RoundResult::Nothing, SECTION_COUNT),
             part_count: 0,
             victim_is_wounded: false,
-        };
-
-        // Return new game state
-        return state;
+        }
     }
 
     /// Generate random game state.
@@ -134,7 +136,7 @@ impl GameState {
         }
 
         // No section was found that is trapped
-        return false;
+        false
     }
 
     /// Get the index of a section by its letter identifier.
@@ -148,7 +150,7 @@ impl GameState {
         }
 
         // Didn't find a section
-        return None;
+        None
     }
 
     /// Get the index of a sub section by its letter identifier.
@@ -169,7 +171,7 @@ impl GameState {
         }
 
         // Didn't find a sub section
-        return None;
+        None
     }
 
     /// Get a tuple containing the index of a section and sub-section respectively by letter identifier.
@@ -196,7 +198,7 @@ impl GameState {
         }
 
         // Couldn't find the section/sub-section pair
-        return None;
+        None
     }
 
     /// Perform a round of the game.
@@ -218,16 +220,10 @@ impl GameState {
         }
 
         // Special check for chase round
-        match self.last_result.0 {
-            // Victim and killer must choose the section that the chase is taking place in
-            RoundResult::ChaseBegins(section) => {
-                if victim.0 != section || killer.0 != section {
-                    return Err(PlayError::OutOfBounds);
-                }
+        if let RoundResult::ChaseBegins(section) = self.last_result.0 {
+            if victim.0 != section || killer.0 != section {
+                return Err(PlayError::OutOfBounds);
             }
-
-            // Ignore all other cases
-            _ => {}
         }
 
         // Get the car part in the section
@@ -286,10 +282,10 @@ impl GameState {
             if car_part { victim.0 } else { SECTION_COUNT },
         );
 
-        return Ok((
+        Ok((
             round_result,
             if car_part { victim.0 } else { SECTION_COUNT },
-        ));
+        ))
     }
 }
 

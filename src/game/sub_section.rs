@@ -18,10 +18,6 @@ impl SubSection {
         assert_eq!(letter.is_alphabetic(), true);
         assert_eq!(letter.is_uppercase(), true);
 
-        SubSection {
-            name: name,
-            letter: letter,
-            part: part,
-        }
+        SubSection { name, letter, part }
     }
 }

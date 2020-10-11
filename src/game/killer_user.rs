@@ -82,7 +82,7 @@ pub fn play_killer(state: &mut GameState) -> (usize, usize) {
                 .expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return (section, sub_section_ind);
+            (section, sub_section_ind)
         }
 
         // Normal round
@@ -131,7 +131,7 @@ pub fn play_killer(state: &mut GameState) -> (usize, usize) {
                 .expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return (section_ind, sub_section_ind);
+            (section_ind, sub_section_ind)
         }
     }
 }

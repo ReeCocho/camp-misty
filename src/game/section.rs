@@ -31,9 +31,9 @@ impl Section {
         assert_eq!(letter.is_uppercase(), true);
 
         Section {
-            name: name,
-            letter: letter,
-            sub_sections: sub_sections,
+            name,
+            letter,
+            sub_sections,
             trapped: false,
         }
     }

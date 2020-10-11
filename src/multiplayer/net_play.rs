@@ -97,5 +97,5 @@ pub fn net_play(
     }
 
     // Nobody won
-    return false;
+    false
 }

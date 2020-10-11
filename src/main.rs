@@ -18,7 +18,7 @@ fn main() {
         println!("          (Q)uit");
 
         // Determine selection
-        match util::pick_char(&vec!['H', 'J', 'Q', 'I'], "Sorry, that isn't an option.") {
+        match util::pick_char(&['H', 'J', 'Q', 'I'], "Sorry, that isn't an option.") {
             // Host a game
             'H' => {
                 // Host game

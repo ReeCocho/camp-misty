@@ -20,7 +20,7 @@ impl<'a> KillerAI {
     /// Only argument is the game state.
     pub fn new(state: Rc<RefCell<GameState>>) -> KillerAI {
         KillerAI {
-            state: state,
+            state,
             sections: (0..SECTION_COUNT).collect(),
         }
     }
@@ -44,7 +44,7 @@ impl<'a> KillerAI {
         }
 
         // Determine move based off of last round result
-        return match last_result.0 {
+        match last_result.0 {
             // Normal round logic
             RoundResult::Nothing | RoundResult::Evaded | RoundResult::Wounded => {
                 // Choose a random section from our list of valid sections
@@ -69,6 +69,6 @@ impl<'a> KillerAI {
 
             // All other scenarios result in a default move
             _ => (0, 0),
-        };
+        }
     }
 }

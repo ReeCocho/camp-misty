@@ -50,8 +50,7 @@ pub fn read_over_tcp<T: serde::de::DeserializeOwned>(stream: &mut std::net::TcpS
 
     // Create new buffer to hold serialized data
     let buf_size = LittleEndian::read_u32(&buf) as usize;
-    let mut buf = Vec::<u8>::with_capacity(buf_size);
-    buf.resize(buf_size, 0);
+    let mut buf = vec![0; buf_size];
 
     // Read serialized data
     let mut pos: usize = 0;
@@ -65,16 +64,13 @@ pub fn read_over_tcp<T: serde::de::DeserializeOwned>(stream: &mut std::net::TcpS
     }
 
     // Deserialize data
-    return serde_json::from_slice::<T>(&buf).expect("Unable to deserialized structure!");
+    serde_json::from_slice::<T>(&buf).expect("Unable to deserialized structure!")
 }
 
 /// An enum used to identify a type of player (either a victim or killer)
 #[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum PlayerType {
-    /// Killer player.
     Killer,
-
-    /// Victim player.
     Victim,
 }
 
@@ -83,6 +79,12 @@ pub enum PlayerType {
 pub struct GameStatePacket {
     // List of the spots the car parts are hidden in.
     pub hidden_parts: [(u32, u32); SECTION_COUNT],
+}
+
+impl Default for GameStatePacket {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GameStatePacket {

@@ -85,7 +85,7 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
                 .expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return (section, sub_section_ind);
+            (section, sub_section_ind)
         }
 
         // A normal round
@@ -134,7 +134,7 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
                 .expect("Sub section not found!");
 
             // Return the section and sub section tuple
-            return (section_ind, sub_section_ind);
+            (section_ind, sub_section_ind)
         }
     }
 }
@@ -171,5 +171,5 @@ pub fn victim_place_trap(state: &mut GameState) -> usize {
     // Flavor
     println!("Trapped has been placed!");
 
-    return section_ind;
+    section_ind
 }

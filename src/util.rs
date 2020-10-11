@@ -9,7 +9,7 @@ pub fn read_str() -> String {
         .read_line(&mut input)
         .expect("Unable to read user input.");
 
-    return String::from(input.trim());
+    String::from(input.trim())
 }
 
 /// Helper function to have the user pick a character from a list of valid choices.
@@ -19,7 +19,7 @@ pub fn read_str() -> String {
 /// The second argument is the message to prompt the user with when an invalid character is chosen.
 ///
 /// The function returns the chosen character.
-pub fn pick_char(valid_chars: &Vec<char>, err_msg: &str) -> char {
+pub fn pick_char(valid_chars: &[char], err_msg: &str) -> char {
     // Loop to constantly as for input
     loop {
         // Read input

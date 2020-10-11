@@ -20,7 +20,7 @@ impl VictimAI {
     /// The only argument is a reference to the game state to play in.
     pub fn new(state: Rc<RefCell<GameState>>) -> VictimAI {
         let mut ai = VictimAI {
-            state: state,
+            state,
             unvisited: Vec::<(usize, usize)>::new(),
         };
 
@@ -32,7 +32,7 @@ impl VictimAI {
             }
         }
 
-        return ai;
+        ai
     }
 
     /// Have the victim place a trap randomly.
@@ -41,7 +41,7 @@ impl VictimAI {
         let mut sections = Vec::<usize>::new();
         for unvisited in &self.unvisited {
             // Check if we already have that section
-            if let Some(_) = sections.iter().find(|&e| *e == unvisited.0) {
+            if sections.iter().any(|e| *e == unvisited.0) {
                 continue;
             }
             // Add the section
@@ -51,7 +51,7 @@ impl VictimAI {
         }
 
         // Pick a random section in that last
-        if sections.len() > 0 {
+        if !sections.is_empty() {
             let ind = rand::thread_rng().gen_range(0, sections.len());
             self.state.borrow_mut().place_trap(sections[ind]);
         }
@@ -82,11 +82,8 @@ impl VictimAI {
                 // Choose a random section/sub-section tuple from our list of unvisited tuples
                 let tup_ind = rand::thread_rng().gen_range(0, self.unvisited.len());
 
-                // Get the tuple and remove it from the unvisited list
-                let tup = self.unvisited.remove(tup_ind);
-
-                // Play that move
-                tup
+                // Get the tuple, remove it from the unvisited list and return it
+                self.unvisited.remove(tup_ind)
             }
 
             // Special logic for a chase
@@ -102,7 +99,7 @@ impl VictimAI {
                 }
 
                 // Special case if we have visited all the sections already
-                if valid_moves.len() == 0 {
+                if valid_moves.is_empty() {
                     valid_moves.push((section, rand::thread_rng().gen_range(0, SUB_SECTION_COUNT)));
                 }
 
@@ -165,6 +162,6 @@ impl VictimAI {
             }
         }
 
-        return tup;
+        tup
     }
 }

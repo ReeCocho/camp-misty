@@ -24,17 +24,13 @@ impl Client {
         // Try to create stream
         match std::net::TcpStream::connect(String::from(ip) + ":" + port_as_str.as_str()) {
             // Stream created successfully
-            Ok(stream) => {
-                return Ok(Client {
-                    state: GameState::new(),
-                    server: stream,
-                })
-            }
+            Ok(stream) => Ok(Client {
+                state: GameState::new(),
+                server: stream,
+            }),
 
             // Something went wrong
-            Err(_) => {
-                return Err(ClientError);
-            }
+            Err(_) => Err(ClientError),
         }
     }
 
@@ -82,7 +78,7 @@ impl Client {
                     println!("There was a problem joining the host.");
                     println!("Would you like to (T)ry again or (R)eturn to the main menu?");
 
-                    match pick_char(&vec!['T', 'R'], "Sorry, that isn't an option.") {
+                    match pick_char(&['T', 'R'], "Sorry, that isn't an option.") {
                         'T' => {}
                         'R' => {
                             return;

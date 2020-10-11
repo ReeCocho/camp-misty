@@ -24,18 +24,14 @@ impl Server {
         let port_as_str = port.to_string();
         match std::net::TcpListener::bind(String::from("0.0.0.0:") + port_as_str.as_str()) {
             // Listener was created successfully.
-            Ok(listener) => {
-                return Ok(Server {
-                    state: GameState::new(),
-                    listener: listener,
-                    client: None,
-                });
-            }
+            Ok(listener) => Ok(Server {
+                state: GameState::new(),
+                listener,
+                client: None,
+            }),
 
             // Return an error saying the server was unable to be created.
-            Err(_) => {
-                return Err(ServerError);
-            }
+            Err(_) => Err(ServerError),
         }
     }
 
@@ -45,15 +41,12 @@ impl Server {
             // Client connected successfully
             Ok((socket, _addr)) => {
                 self.client = Some(socket);
+                Ok(())
             }
 
             // There was an issue while a client tried to connect
-            Err(_e) => {
-                return Err(ConnectionError);
-            }
+            Err(_e) => Err(ConnectionError),
         }
-
-        return Ok(());
     }
 
     /// Host game logic.
@@ -95,7 +88,7 @@ impl Server {
                     println!("There was a problem creating the server.");
                     println!("Would you like to (T)ry again or (R)eturn to the main menu?");
 
-                    match pick_char(&vec!['T', 'R'], "Sorry, that isn't an option.") {
+                    match pick_char(&['T', 'R'], "Sorry, that isn't an option.") {
                         'T' => {}
                         'R' => {
                             return;
@@ -134,7 +127,7 @@ impl Server {
                 // Host gets to choose if they want to be the killer or the victim
                 println!("Would you like to be the (K)iller, the (V)ictim, or (R)andomly choose?");
                 let player_type =
-                    match pick_char(&vec!['K', 'V', 'R'], "Sorry, that isn't a valid option.") {
+                    match pick_char(&['K', 'V', 'R'], "Sorry, that isn't a valid option.") {
                         'K' => PlayerType::Killer,
                         'V' => PlayerType::Victim,
                         'R' => {
