@@ -4,7 +4,6 @@ use std::rc::Rc;
 
 use crate::game::game_state::*;
 use crate::game::section::*;
-use crate::game::sub_section::*;
 
 /// An AI version of a victim to be used for testing/single player.
 pub struct VictimAI
@@ -154,7 +153,7 @@ impl VictimAI
         // section/sub-section tuples that are in the same section we are searching
         {
             let state = self.state.borrow();
-            if state.sections[tup.0].sub_sections[tup.1].part != CarPart::None
+            if state.sections[tup.0].sub_sections[tup.1].part
             {
                 // To do this, we take advantage of the guarantee made during construction of the
                 // victim ai: the unvisited tuples are sorted by section. This means we can loop

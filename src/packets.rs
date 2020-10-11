@@ -1,7 +1,6 @@
 use serde::{Serialize, Deserialize};
 use byteorder::{ByteOrder, LittleEndian};
 use std::io::prelude::*;
-use crate::game::sub_section::*;
 use crate::game::game_state::*;
 
 /// Function to write the contents of a structure over a TCP connection.
@@ -83,8 +82,8 @@ pub enum PlayerType
 #[derive(Serialize, Deserialize)]
 pub struct GameStatePacket
 {
-    // List of car parts and the spots they are hidden in.
-    pub hidden_parts : [((u32, u32), CarPart); SECTION_COUNT]
+    // List of the spots the car parts are hidden in.
+    pub hidden_parts : [(u32, u32); SECTION_COUNT]
 }
 
 impl GameStatePacket
@@ -96,11 +95,11 @@ impl GameStatePacket
         {
             hidden_parts : 
             [
-                ((0, 0), CarPart::None),
-                ((0, 0), CarPart::None),
-                ((0, 0), CarPart::None),
-                ((0, 0), CarPart::None),
-                ((0, 0), CarPart::None)
+                (0, 0),
+                (0, 0),
+                (0, 0),
+                (0, 0),
+                (0, 0)
             ]
         }
     }

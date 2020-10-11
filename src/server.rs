@@ -3,7 +3,6 @@ use rand::Rng;
 use crate::game::game_state::*;
 use crate::game::victim::*;
 use crate::game::killer::*;
-use crate::game::sub_section::*;
 use crate::util::*;
 use crate::packets::*;
 
@@ -179,14 +178,10 @@ impl Server
                 {
                     for (j, sub_section) in section.sub_sections.iter().enumerate()
                     {
-                        if sub_section.part != CarPart::None
+                        if sub_section.part
                         {
                             println!("Part {} {}", i, j);
-                            state_packet.hidden_parts[state_packet_ind] = 
-                            (
-                                (i as u32, j as u32),
-                                sub_section.part
-                            );
+                            state_packet.hidden_parts[state_packet_ind] = (i as u32, j as u32);
                             state_packet_ind += 1;
                         }
                     }
@@ -213,7 +208,7 @@ impl Server
                     let client_move = read_over_tcp::<MovePacket>(client);
 
                     // Submit moves to the game state
-                    let mut res : (RoundResult, (CarPart, usize));
+                    let res : (RoundResult, usize);
                     if player_type == PlayerType::Killer 
                     {
                         res = self.state.play(

@@ -1,5 +1,3 @@
-use serde::{Serialize, Deserialize};
-
 /// A sub-section contained within a section.
 pub struct SubSection
 {
@@ -9,16 +7,16 @@ pub struct SubSection
     // Letter identifying the sub section.
     pub letter : char,
 
-    // Part contained within the sub-section.
-    pub part : CarPart
+    // If a part is contained within the sub-section.
+    pub part : bool
 }
 
 impl SubSection
 {
-    /// Constructs a sub section given a `name`, `letter`, and `part`.
+    /// Constructs a sub section given a `name`, `letter`, and optional `part`.
     /// 
     /// NOTE: `letter` should be an uppercase letter.
-    pub fn new(name : String, letter : char, part : CarPart) -> SubSection
+    pub fn new(name : String, letter : char, part : bool) -> SubSection
     {
         assert_eq!(letter.is_alphabetic(), true);
         assert_eq!(letter.is_uppercase(), true);
@@ -30,15 +28,4 @@ impl SubSection
             part : part
         }
     }
-}
-
-/// A car part the victim might be looking for.
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum CarPart
-{
-    None,
-    Gasoline,
-    Battery,
-    SparkPlug,
-    Headlights
 }

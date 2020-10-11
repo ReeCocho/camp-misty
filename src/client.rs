@@ -3,7 +3,6 @@ use crate::util::*;
 use crate::packets::*;
 use crate::game::victim::*;
 use crate::game::killer::*;
-use crate::game::sub_section::*;
 
 /// A client that joins a hosts game
 pub struct Client
@@ -123,7 +122,7 @@ impl Client
         // Determine what player type we are
         println!("Waiting for host to choose player type...");
 
-        let mut player_type : PlayerType;
+        let player_type : PlayerType;
         match read_over_tcp::<PlayerType>(&mut self.server)
         {
             PlayerType::Killer => 
@@ -145,7 +144,7 @@ impl Client
         // Update our state with new state
         for part in &loaded_state.hidden_parts
         {
-            self.state.hide_part(part.0.0 as usize, part.0.1 as usize, part.1);
+            self.state.hide_part(part.0 as usize, part.1 as usize);
         }
 
         // Game loop
@@ -166,7 +165,7 @@ impl Client
             let client_move = read_over_tcp::<MovePacket>(&mut self.server);
 
             // Submit moves to the game state
-            let mut res : (RoundResult, (CarPart, usize));
+            let res : (RoundResult, usize);
             if player_type == PlayerType::Killer 
             {
                 res = self.state.play(

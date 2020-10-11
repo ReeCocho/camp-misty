@@ -1,4 +1,3 @@
-use rand::seq::SliceRandom;
 use rand::Rng;
 
 use crate::game::section::*;
@@ -35,59 +34,59 @@ impl GameState
             String::from("The (C)abin"), 
             'C',
             [
-                SubSection::new(String::from("(B)edroom"), 'B', CarPart::None),
-                SubSection::new(String::from("(K)itchen"), 'K', CarPart::None),
-                SubSection::new(String::from("(T)oilet"), 'T', CarPart::None),
-                SubSection::new(String::from("(C)loset"), 'C', CarPart::None),
-                SubSection::new(String::from("(A)ttic"), 'A', CarPart::None)   
+                SubSection::new(String::from("(B)edroom"), 'B', false),
+                SubSection::new(String::from("(K)itchen"), 'K', false),
+                SubSection::new(String::from("(T)oilet"), 'T', false),
+                SubSection::new(String::from("(C)loset"), 'C', false),
+                SubSection::new(String::from("(A)ttic"), 'A', false)   
             ]);
 
         let lake_misty = Section::new(
             String::from("(L)ake Misty"), 
             'L',
             [
-                SubSection::new(String::from("(D)ock"), 'D', CarPart::None),
-                SubSection::new(String::from("(B)oat"), 'B', CarPart::None),
-                SubSection::new(String::from("(E)ast shore"), 'E', CarPart::None),
-                SubSection::new(String::from("(W)est shore"), 'W', CarPart::None),
-                SubSection::new(String::from("(S)outh shore"), 'S', CarPart::None)   
+                SubSection::new(String::from("(D)ock"), 'D', false),
+                SubSection::new(String::from("(B)oat"), 'B', false),
+                SubSection::new(String::from("(E)ast shore"), 'E', false),
+                SubSection::new(String::from("(W)est shore"), 'W', false),
+                SubSection::new(String::from("(S)outh shore"), 'S', false)   
             ]);
 
         let abandoned_manor = Section::new(
             String::from("The (A)bandoned manor"), 
             'A',
             [
-                SubSection::new(String::from("(M)aster bedroom"), 'M', CarPart::None),
-                SubSection::new(String::from("(D)ining hall"), 'D', CarPart::None),
-                SubSection::new(String::from("(B)asement"), 'B', CarPart::None),
-                SubSection::new(String::from("(K)itchen"), 'K', CarPart::None),
-                SubSection::new(String::from("(F)ourier"), 'F', CarPart::None)   
+                SubSection::new(String::from("(M)aster bedroom"), 'M', false),
+                SubSection::new(String::from("(D)ining hall"), 'D', false),
+                SubSection::new(String::from("(B)asement"), 'B', false),
+                SubSection::new(String::from("(K)itchen"), 'K', false),
+                SubSection::new(String::from("(F)ourier"), 'F', false)   
             ]);
 
         let bonfire = Section::new(
             String::from("The (B)onfire"), 
             'B',
             [
-                SubSection::new(String::from("(S)hrubs"), 'S', CarPart::None),
-                SubSection::new(String::from("(C)ouch"), 'C', CarPart::None),
-                SubSection::new(String::from("(L)ogs"), 'L', CarPart::None),
-                SubSection::new(String::from("(T)rees"), 'T', CarPart::None),
-                SubSection::new(String::from("(B)lankets"), 'B', CarPart::None)   
+                SubSection::new(String::from("(S)hrubs"), 'S', false),
+                SubSection::new(String::from("(C)ouch"), 'C', false),
+                SubSection::new(String::from("(L)ogs"), 'L', false),
+                SubSection::new(String::from("(T)rees"), 'T', false),
+                SubSection::new(String::from("(B)lankets"), 'B', false)   
             ]);
 
         let old_forest = Section::new(
             String::from("The (O)ld forest"), 
             'O',
             [
-                SubSection::new(String::from("(P)ond"), 'P', CarPart::None),
-                SubSection::new(String::from("(C)ave"), 'C', CarPart::None),
-                SubSection::new(String::from("(S)hrine"), 'S', CarPart::None),
-                SubSection::new(String::from("(F)airy circle"), 'F', CarPart::None),
-                SubSection::new(String::from("(H)ollow log"), 'H', CarPart::None)   
+                SubSection::new(String::from("(P)ond"), 'P', false),
+                SubSection::new(String::from("(C)ave"), 'C', false),
+                SubSection::new(String::from("(S)hrine"), 'S', false),
+                SubSection::new(String::from("(F)airy circle"), 'F', false),
+                SubSection::new(String::from("(H)ollow log"), 'H', false)   
             ]);
         
         // Construct game state
-        let mut state = GameState
+        let state = GameState
         {
             sections : 
             [
@@ -109,38 +108,21 @@ impl GameState
     /// Generate random game state.
     pub fn gen_state(&mut self)
     {
-        // Take a list of all car parts and shuffle them
-        let car_parts = [
-            CarPart::Battery,
-            CarPart::Headlights,
-            CarPart::SparkPlug,
-            CarPart::Gasoline,
-            CarPart::Gasoline];
-        
-        // Create a list of indices
-        let mut part_loc_inds : Vec<usize> = (0..SECTION_COUNT).collect();
-
-        // Remove one random index from the list (this indicates which section doesn't have a part)
-        // part_loc_inds.remove(rand::thread_rng().gen_range(0, part_loc_inds.len()));
-
-        // Shuffle the index. Then, we can distribute the parts randomly among the sections
-        part_loc_inds.shuffle(&mut rand::thread_rng());
-
         // Distribute car parts
-        for (part_index, section_index) in part_loc_inds.iter().enumerate()
+        for i in 0..SECTION_COUNT
         {
             // Randomly choose which sub section gets the part
             let rand_ind = rand::thread_rng().gen_range(0, SUB_SECTION_COUNT);
 
             // Place the part in the sub section
-            self.hide_part(*section_index, rand_ind, car_parts[part_index]);
+            self.hide_part(i, rand_ind);
         }
     }
 
     /// Hide a car part in a sub section by index.
-    pub fn hide_part(&mut self, section : usize, sub_section : usize, part : CarPart)
+    pub fn hide_part(&mut self, section : usize, sub_section : usize)
     {
-        self.sections[section].sub_sections[sub_section].part = part;
+        self.sections[section].sub_sections[sub_section].part = true;
         self.part_count += 1;
     }
 
@@ -275,10 +257,10 @@ impl GameState
         let car_part = self.sections[victim.0].sub_sections[victim.1].part;
 
         // Get rid of part if needed
-        if car_part != CarPart::None
+        if car_part
         {
             // Remove the part
-            self.sections[victim.0].sub_sections[victim.1].part = CarPart::None;
+            self.sections[victim.0].sub_sections[victim.1].part = false;
 
             // Decrement part count
             self.part_count -= 1;
@@ -332,9 +314,9 @@ impl GameState
         }
 
         // Update result
-        self.last_result = (round_result.clone(), if car_part != CarPart::None { victim.0 } else { SECTION_COUNT });
+        self.last_result = (round_result.clone(), if car_part { victim.0 } else { SECTION_COUNT });
 
-        return Ok((round_result, (car_part, victim.0)));
+        return Ok((round_result, if car_part { victim.0 } else { SECTION_COUNT }));
     }
 }
 
@@ -380,8 +362,10 @@ pub enum PlayError
 
 /// Result type of playing a round of the game.
 /// 
-/// Contains the round result and car part found including what section it was found in.
-pub type PlayResult = std::result::Result<(RoundResult, (CarPart, usize)), PlayError>;
+/// Contains the round result and the index of the car part if found.
+/// 
+/// NOTE: If a car part was not found, the index will equal SECTION_COUNT
+pub type PlayResult = std::result::Result<(RoundResult, usize), PlayError>;
 
 
 
