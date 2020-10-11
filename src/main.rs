@@ -1,11 +1,9 @@
 pub mod game;
-pub mod packets;
-pub mod server;
-pub mod client;
+pub mod multiplayer;
 pub mod util;
 
-use server::*;
-use client::*;
+use multiplayer::server::*;
+use multiplayer::client::*;
 
 fn main() 
 {

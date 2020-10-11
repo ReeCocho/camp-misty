@@ -68,7 +68,7 @@ pub fn read_over_tcp<T : serde::de::DeserializeOwned>(stream : &mut std::net::Tc
 }
 
 /// An enum used to identify a type of player (either a victim or killer)
-#[derive(PartialEq, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum PlayerType
 {
     /// Killer player.

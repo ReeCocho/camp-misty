@@ -1,10 +1,9 @@
 use rand::Rng;
 
 use crate::game::game_state::*;
-use crate::game::victim::*;
-use crate::game::killer::*;
 use crate::util::*;
-use crate::packets::*;
+use super::packets::*;
+use super::net_play::*;
 
 /// A server that hosts a game
 pub struct Server
@@ -180,7 +179,6 @@ impl Server
                     {
                         if sub_section.part
                         {
-                            println!("Part {} {}", i, j);
                             state_packet.hidden_parts[state_packet_ind] = (i as u32, j as u32);
                             state_packet_ind += 1;
                         }
@@ -191,86 +189,7 @@ impl Server
                 write_over_tcp::<GameStatePacket>(client, &state_packet);
 
                 // Game loop
-                loop
-                {
-                    // Play game
-                    let our_move = 
-                    if player_type == PlayerType::Killer 
-                    { play_killer(&mut self.state) } 
-                    else 
-                    { play_victim(&mut self.state) };
-
-                    // Send our move to the client
-                    write_over_tcp::<MovePacket>(client, &MovePacket { 0 : our_move.0 as u32, 1 : our_move.1 as u32 });
-
-                    // Wait for client to tell us their move
-                    println!("Waiting for the other player move...");
-                    let client_move = read_over_tcp::<MovePacket>(client);
-
-                    // Submit moves to the game state
-                    let res : (RoundResult, usize);
-                    if player_type == PlayerType::Killer 
-                    {
-                        res = self.state.play(
-                            (client_move.0 as usize, client_move.1 as usize),
-                            our_move
-                        ).expect("Something went wrong during play");
-                    }
-                    else
-                    {
-                        res = self.state.play(
-                            our_move, 
-                            (client_move.0 as usize, client_move.1 as usize)
-                        ).expect("Something went wrong during play");
-                    }
-
-                    // Place trap if evaded
-                    if res.0 == RoundResult::Evaded
-                    {
-                        // If we are the victim, tell the client where the trap was placed
-                        if player_type == PlayerType::Victim
-                        {
-                            // Place the trap
-                            let trap_loc = victim_place_trap(&mut self.state) as TrapPacket;
-
-                            // Tell the client where we placed the trap
-                            write_over_tcp::<TrapPacket>(client, &trap_loc);
-                        }
-                        // If we are the killer, have the client tell us where they placed the trap
-                        else
-                        {
-                            let trap_loc = read_over_tcp::<TrapPacket>(client);
-                            self.state.place_trap(trap_loc as usize);
-                        }
-                    }
-                    // Break if someone won
-                    else if res.0 == RoundResult::Caught
-                    {
-                        if player_type == PlayerType::Victim
-                        {
-                            println!("Noooo!!! The killer slices your back and you fall dead... You lose!");
-                        }
-                        else
-                        {
-                            println!("Muahahahaha!!! You slice the victim across their back, and they fall dead... You win!");
-                        }
-
-                        break;
-                    }
-                    else if res.0 == RoundResult::AllPartsFound
-                    {
-                        if player_type == PlayerType::Victim
-                        {
-                            println!("Yes!!! You found all of the car parts and are able to escape Camp Misty! You win!");
-                        }
-                        else
-                        {
-                            println!("No!!! The victim found all the car parts and escaped Camp Misty!");
-                        }
-
-                        break;
-                    }
-                }
+                while !net_play(player_type, &mut self.state, client) {}
             }
 
             // No client loaded
