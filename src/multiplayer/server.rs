@@ -20,16 +20,13 @@ pub struct Server {
 impl Server {
     /// Constructor.
     pub fn new(port: u16) -> Result<Server, ServerError> {
-        // Initialize TCP listener
         match std::net::TcpListener::bind(std::net::SocketAddr::from(([0, 0, 0, 0], port))) {
-            // Listener was created successfully.
             Ok(listener) => Ok(Server {
                 state: GameState::new(),
                 listener,
                 client: None,
             }),
 
-            // Return an error saying the server was unable to be created.
             Err(_) => Err(ServerError),
         }
     }
@@ -37,13 +34,11 @@ impl Server {
     /// Wait for a client to connect
     pub fn wait_for_client(&mut self) -> Result<(), ConnectionError> {
         match self.listener.accept() {
-            // Client connected successfully
             Ok((socket, _addr)) => {
                 self.client = Some(socket);
                 Ok(())
             }
 
-            // There was an issue while a client tried to connect
             Err(_e) => Err(ConnectionError),
         }
     }
@@ -59,15 +54,13 @@ impl Server {
             // Loop to get port
             let port: u16;
             loop {
-                // Convert to int
+                // Try to convert to int
                 match read_str().parse::<u16>() {
-                    // Port is valid
                     Ok(i) => {
                         port = i;
                         break;
                     }
 
-                    // There was a problem
                     Err(_) => {
                         println!("Sorry, I didn't understand you.");
                     }
@@ -76,13 +69,11 @@ impl Server {
 
             // Attempt to create server
             match Server::new(port) {
-                // Created successfully
                 Ok(s) => {
                     server = s;
                     break;
                 }
 
-                // There was a problem
                 Err(_) => {
                     println!("There was a problem creating the server.");
                     println!("Would you like to (T)ry again or (R)eturn to the main menu?");
@@ -101,7 +92,6 @@ impl Server {
         // Wait for client
         println!("Waiting for client...");
         match server.wait_for_client() {
-            // Client joined successfully
             Ok(_) => {}
             Err(_) => {
                 println!("Woops! Looks like something went wrong when the client tried to connect. Returning to the main menu.");
@@ -121,7 +111,6 @@ impl Server {
 
         // Client must exist
         match &mut self.client {
-            // Client exists
             Some(client) => {
                 // Host gets to choose if they want to be the killer or the victim
                 println!("Would you like to be the (K)iller, the (V)ictim, or (R)andomly choose?");
@@ -160,7 +149,7 @@ impl Server {
                 // Game loop
                 while !net_play(player_type, &mut self.state, client) {}
 
-                // Return to title
+                // Return to title screen
                 println!("Enter anything to return to the title screen...");
                 read_str();
             }

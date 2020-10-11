@@ -1,11 +1,11 @@
-use std::net::{ToSocketAddrs};
+use std::net::ToSocketAddrs;
 
 use super::net_play::*;
 use super::packets::*;
 use crate::game::game_state::*;
 use crate::util::*;
 
-/// A client that joins a hosts game
+/// A client that joins a hosts game.
 pub struct Client {
     /// Game state.
     state: GameState,
@@ -18,17 +18,13 @@ impl Client {
     /// Create a new client stream.
     ///
     /// The only argument is the address to connect to.
-    pub fn new(addr : &std::net::SocketAddr) -> Result<Client, ClientError> {
-
-        // Try to create stream
+    pub fn new(addr: &std::net::SocketAddr) -> Result<Client, ClientError> {
         match std::net::TcpStream::connect(addr) {
-            // Stream created successfully
             Ok(stream) => Ok(Client {
                 state: GameState::new(),
                 server: stream,
             }),
 
-            // Something went wrong
             Err(_) => Err(ClientError),
         }
     }

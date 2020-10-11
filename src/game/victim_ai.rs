@@ -44,13 +44,13 @@ impl VictimAI {
             if sections.iter().any(|e| *e == unvisited.0) {
                 continue;
             }
-            // Add the section
+            // Add the section if we don't have it
             else {
                 sections.push(unvisited.0);
             }
         }
 
-        // Pick a random section in that last
+        // Pick a random section in that list
         if !sections.is_empty() {
             let ind = rand::thread_rng().gen_range(0, sections.len());
             self.state.borrow_mut().place_trap(sections[ind]);

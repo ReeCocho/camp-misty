@@ -37,7 +37,6 @@ impl<'a> KillerAI {
         // If a car part was found in the last round, remove that section
         // from our list of sections to check
         if last_result.1 != SECTION_COUNT {
-            // Find the index of the section and remove it
             if let Some(i) = self.sections.iter().position(|&s| s == last_result.1) {
                 self.sections.remove(i);
             }

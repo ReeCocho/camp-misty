@@ -33,7 +33,7 @@ pub fn pick_char(valid_chars: &[char], err_msg: &str) -> char {
 
             // Loop over all valid chars
             for c in valid_chars {
-                // All of this to
+                // If a valid char was entered, return it
                 if upper == *c {
                     return *c;
                 }

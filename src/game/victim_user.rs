@@ -158,14 +158,13 @@ pub fn victim_place_trap(state: &mut GameState) -> usize {
         "Sorry, that isn't a location! Choose a location.",
     );
 
-    // Get the section by character
+    // Get the section by character and place the trap
     // NOTE: We don't need to do a 'None' check here because the 'pick_char' function guarantees we choose
     // a valid section
     let section_ind = state
         .get_section_by_letter(section_char)
         .expect("Section not found!");
 
-    // Place trap
     state.place_trap(section_ind);
 
     // Flavor

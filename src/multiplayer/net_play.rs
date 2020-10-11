@@ -36,31 +36,27 @@ pub fn net_play(
     let other_player_move = read_over_tcp::<MovePacket>(stream);
 
     // Submit moves to the game state
-    let res: (RoundResult, usize);
-    if player_type == PlayerType::Killer {
-        res = state
+    let res = if player_type == PlayerType::Killer {
+        state
             .play(
                 (other_player_move.0 as usize, other_player_move.1 as usize),
                 our_move,
             )
-            .expect("Something went wrong during play");
+            .expect("Something went wrong during play")
     } else {
-        res = state
+        state
             .play(
                 our_move,
                 (other_player_move.0 as usize, other_player_move.1 as usize),
             )
-            .expect("Something went wrong during play");
-    }
+            .expect("Something went wrong during play")
+    };
 
     // Place trap if evaded
     if res.0 == RoundResult::Evaded {
-        // If we are the victim, tell the other player where the trap was placed
+        // If we are the victim, place teh trap and then tell the other player where the trap was placed
         if player_type == PlayerType::Victim {
-            // Place the trap
             let trap_loc = victim_place_trap(state) as TrapPacket;
-
-            // Tell the other player where we placed the trap
             write_over_tcp::<TrapPacket>(stream, &trap_loc);
         }
         // If we are the killer, have the other player tell us where they placed the trap

@@ -11,7 +11,7 @@ fn main() {
 
     // Game loop over choices
     loop {
-        // Ask for host, client, or quit
+        // Ask for host, client, instructions, or quit
         println!("          (H)ost a game");
         println!("          (J)oin a game");
         println!("          (I)nstructions");
@@ -24,7 +24,7 @@ fn main() {
                 // Host game
                 Server::host_game();
 
-                // Print title screen for main menu
+                // Print title screen for main menu when finished
                 util::print_title_screen();
             }
 
@@ -33,7 +33,7 @@ fn main() {
                 // Join game
                 Client::join_game();
 
-                // Print title screen for main menu
+                // Print title screen for main menu when finished
                 util::print_title_screen();
             }
 
@@ -80,6 +80,9 @@ fn main() {
 
                 println!("Enter anything to return to the main menu...");
                 util::read_str();
+
+                // Print title screen for main menu when finished
+                util::print_title_screen();
             }
 
             // Unknown

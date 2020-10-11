@@ -11,7 +11,7 @@ where
     // Convert the data to a JSON string
     let serialized = serde_json::to_string(val).expect("Serialization of structure failed!");
 
-    // Create a buffer to hold size of serialized data and the data itself
+    // Create a buffer to hold size of data and the data itself
     let mut data = Vec::<u8>::with_capacity(4 + serialized.len());
     data.resize(4, 0);
 
@@ -22,7 +22,9 @@ where
     data.extend_from_slice(serialized.as_bytes());
 
     // Write data to TCP stream.
-    stream.write_all(&data).expect("Error writing data to TCP stream!");
+    stream
+        .write_all(&data)
+        .expect("Error writing data to TCP stream!");
 }
 
 /// Function to read the contents of a structure from a TCP stream.

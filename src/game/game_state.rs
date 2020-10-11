@@ -121,11 +121,10 @@ impl GameState {
 
     /// Place a trap in a section.
     pub fn place_trap(&mut self, section: usize) {
-        // Place the trap
         self.sections[section].trapped = true;
     }
 
-    /// Determine if a section of the map is trapped.
+    /// Determine if any section of the map is trapped.
     pub fn trap_exists(&self) -> bool {
         // Loop over all sections
         for section in &self.sections {
@@ -206,9 +205,6 @@ impl GameState {
     /// `victim` is a tuple containing the indices of the section and sub-section the victim is checking.
     ///
     /// `killer` is a tuple containing the indices of the section and sub-section the victim is checking.
-    ///
-    /// Returns a `PlayResult` with either an OutOfBounds error, or a tuple containing the result of the round and
-    /// the car part found by the player (may be None).
     pub fn play(&mut self, victim: (usize, usize), killer: (usize, usize)) -> PlayResult {
         // Indices must be within bounds
         if victim.0 >= SECTION_COUNT
@@ -231,14 +227,11 @@ impl GameState {
 
         // Get rid of part if needed
         if car_part {
-            // Remove the part
             self.sections[victim.0].sub_sections[victim.1].part = false;
-
-            // Decrement part count
             self.part_count -= 1;
         }
 
-        // Hold the result of the round
+        // Default round result is nothing happens
         let mut round_result = RoundResult::Nothing;
 
         // If the victim found all parts, they win
@@ -248,6 +241,7 @@ impl GameState {
 
         // If the killer chooses a trapped section and the victim isn't winning the killer is trapped
         if self.sections[killer.0].trapped && round_result != RoundResult::AllPartsFound {
+            // Untrap section
             self.sections[killer.0].trapped = false;
             round_result = RoundResult::TrapTriggered;
         } else {
@@ -276,7 +270,7 @@ impl GameState {
             }
         }
 
-        // Update result
+        // Update last result
         self.last_result = (
             round_result.clone(),
             if car_part { victim.0 } else { SECTION_COUNT },
@@ -319,13 +313,12 @@ pub enum RoundResult {
 /// Types of errors to occur during play.
 #[derive(Debug)]
 pub enum PlayError {
-    /// Some index was out of bounds
     OutOfBounds,
 }
 
 /// Result type of playing a round of the game.
 ///
-/// Contains the round result and the index of the car part if found.
+/// Contains the round result and the index of the section containing the car part if found.
 ///
 /// NOTE: If a car part was not found, the index will equal SECTION_COUNT
 pub type PlayResult = std::result::Result<(RoundResult, usize), PlayError>;
@@ -372,7 +365,7 @@ mod test {
 
                 // Place trap if evaded
                 if res.0 == super::RoundResult::Evaded {
-                    // victim.place_trap();
+                    victim.place_trap();
                 }
                 // Break if someone won
                 else if res.0 == super::RoundResult::Caught {
