@@ -1,10 +1,12 @@
-use serde::{Serialize, Deserialize};
-use byteorder::{ByteOrder, LittleEndian};
-use std::io::prelude::*;
 use crate::game::game_state::*;
+use byteorder::{ByteOrder, LittleEndian};
+use serde::{Deserialize, Serialize};
+use std::io::prelude::*;
 
 /// Function to write the contents of a structure over a TCP connection.
-pub fn write_over_tcp<T>(stream : &mut std::net::TcpStream, data : &T) where T : Serialize
+pub fn write_over_tcp<T>(stream: &mut std::net::TcpStream, data: &T)
+where
+    T: Serialize,
 {
     // Convert the data to a JSON string
     let serialized = serde_json::to_string(data).expect("Serialization of structure failed!");
@@ -21,29 +23,28 @@ pub fn write_over_tcp<T>(stream : &mut std::net::TcpStream, data : &T) where T :
 
     // Write data to TCP stream.
     // NOTE: Not all byte might be written at once, so we need to loop until all are written.
-    let mut pos : usize = 0;
-    while pos < data.len()
-    {
-        match stream.write(&data[pos..])
-        {
-            Ok(n) => { pos += n; }
-            Err(_) => panic!("Error writing data to TCP stream!")
+    let mut pos: usize = 0;
+    while pos < data.len() {
+        match stream.write(&data[pos..]) {
+            Ok(n) => {
+                pos += n;
+            }
+            Err(_) => panic!("Error writing data to TCP stream!"),
         }
     }
 }
 
 /// Function to read the contents of a structure from a TCP stream.
-pub fn read_over_tcp<T : serde::de::DeserializeOwned>(stream : &mut std::net::TcpStream) -> T
-{
+pub fn read_over_tcp<T: serde::de::DeserializeOwned>(stream: &mut std::net::TcpStream) -> T {
     // Read size of structure
     let mut buf = [0u8; 4];
-    let mut pos : usize = 0;
-    while pos < 4
-    {
-        match stream.read(&mut buf[pos..])
-        {
-            Ok(n) => { pos += n; }
-            Err(_) => panic!("Error reading data over TCP stream!")
+    let mut pos: usize = 0;
+    while pos < 4 {
+        match stream.read(&mut buf[pos..]) {
+            Ok(n) => {
+                pos += n;
+            }
+            Err(_) => panic!("Error reading data over TCP stream!"),
         }
     }
 
@@ -53,13 +54,13 @@ pub fn read_over_tcp<T : serde::de::DeserializeOwned>(stream : &mut std::net::Tc
     buf.resize(buf_size, 0);
 
     // Read serialized data
-    let mut pos : usize = 0;
-    while pos < buf_size
-    {
-        match stream.read(&mut buf[pos..])
-        {
-            Ok(n) => { pos += n; }
-            Err(_) => panic!("Error reading data over TCP stream!")
+    let mut pos: usize = 0;
+    while pos < buf_size {
+        match stream.read(&mut buf[pos..]) {
+            Ok(n) => {
+                pos += n;
+            }
+            Err(_) => panic!("Error reading data over TCP stream!"),
         }
     }
 
@@ -69,38 +70,26 @@ pub fn read_over_tcp<T : serde::de::DeserializeOwned>(stream : &mut std::net::Tc
 
 /// An enum used to identify a type of player (either a victim or killer)
 #[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
-pub enum PlayerType
-{
+pub enum PlayerType {
     /// Killer player.
     Killer,
-    
+
     /// Victim player.
-    Victim
+    Victim,
 }
 
 /// A structure used to describe the state of the game to a client.
 #[derive(Serialize, Deserialize)]
-pub struct GameStatePacket
-{
+pub struct GameStatePacket {
     // List of the spots the car parts are hidden in.
-    pub hidden_parts : [(u32, u32); SECTION_COUNT]
+    pub hidden_parts: [(u32, u32); SECTION_COUNT],
 }
 
-impl GameStatePacket
-{
+impl GameStatePacket {
     /// Constructor.
-    pub fn new() -> GameStatePacket
-    {
-        GameStatePacket
-        {
-            hidden_parts : 
-            [
-                (0, 0),
-                (0, 0),
-                (0, 0),
-                (0, 0),
-                (0, 0)
-            ]
+    pub fn new() -> GameStatePacket {
+        GameStatePacket {
+            hidden_parts: [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
         }
     }
 }

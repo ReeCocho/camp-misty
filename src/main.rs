@@ -2,17 +2,15 @@ pub mod game;
 pub mod multiplayer;
 pub mod util;
 
-use multiplayer::server::*;
 use multiplayer::client::*;
+use multiplayer::server::*;
 
-fn main() 
-{
+fn main() {
     // Title screen
     util::print_title_screen();
 
     // Game loop over choices
-    loop
-    {
+    loop {
         // Ask for host, client, or quit
         println!("          (H)ost a game");
         println!("          (J)oin a game");
@@ -20,11 +18,9 @@ fn main()
         println!("          (Q)uit");
 
         // Determine selection
-        match util::pick_char(&vec!['H', 'J', 'Q', 'I'], "Sorry, that isn't an option.")
-        {
+        match util::pick_char(&vec!['H', 'J', 'Q', 'I'], "Sorry, that isn't an option.") {
             // Host a game
-            'H' =>
-            {
+            'H' => {
                 // Host game
                 Server::host_game();
 
@@ -33,8 +29,7 @@ fn main()
             }
 
             // Join a game
-            'J' =>
-            {
+            'J' => {
                 // Join game
                 Client::join_game();
 
@@ -43,16 +38,14 @@ fn main()
             }
 
             // Quit
-            'Q' =>
-            {
+            'Q' => {
                 // End the game
                 println!("Thanks for playing!");
                 return;
             }
 
             // Instructions
-            'I' =>
-            {
+            'I' => {
                 println!("Trapped within this hellish domain is a victim, who is being hunted down by a ruthless killer!");
                 println!("The victim is trying to find 5 car parts so that they can repair their vehicle and escape.");
                 println!("The killer is trying to stop the victim.\n");
@@ -90,7 +83,7 @@ fn main()
             }
 
             // Unknown
-            _ => panic!("Invalid input")
+            _ => panic!("Invalid input"),
         }
     }
 }
