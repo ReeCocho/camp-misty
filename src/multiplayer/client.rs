@@ -1,3 +1,5 @@
+use std::net::{ToSocketAddrs};
+
 use super::net_play::*;
 use super::packets::*;
 use crate::game::game_state::*;
@@ -15,14 +17,11 @@ pub struct Client {
 impl Client {
     /// Create a new client stream.
     ///
-    /// There are two parameters. The first is a string corresponding to the
-    /// ipaddress to connect to. The other is the port number to connect using.
-    pub fn new(ip: &str, port: u32) -> Result<Client, ClientError> {
-        // Convert port to a string
-        let port_as_str = port.to_string();
+    /// The only argument is the address to connect to.
+    pub fn new(addr : &std::net::SocketAddr) -> Result<Client, ClientError> {
 
         // Try to create stream
-        match std::net::TcpStream::connect(String::from(ip) + ":" + port_as_str.as_str()) {
+        match std::net::TcpStream::connect(addr) {
             // Stream created successfully
             Ok(stream) => Ok(Client {
                 state: GameState::new(),
@@ -39,42 +38,37 @@ impl Client {
         // Loop to create client
         let mut client: Client;
         loop {
-            // Ask for IP
-            println!("Please enter the IP address of the host.");
-            let ip = read_str();
+            // Ask for address of host
+            println!("Please enter the address of the host.");
+            println!("Use the format \"IP:PORT\".");
 
-            // Ask for port number
-            println!("Please enter the port of the host.");
-
-            // Loop to get port
-            let port: u32;
-            loop {
-                // Convert to int
-                match read_str().parse::<u32>() {
-                    // Port is valid
-                    Ok(i) => {
-                        port = i;
-                        break;
-                    }
-
-                    // There was a problem
-                    Err(_) => {
-                        println!("Sorry, I didn't understand you.");
+            let addr = match read_str().to_socket_addrs() {
+                Ok(mut addr_list) => {
+                    // Only take the first address
+                    if let Some(addr) = addr_list.next() {
+                        addr
+                    } else {
+                        println!("Sorry, I couldn't understand you.");
+                        continue;
                     }
                 }
-            }
+
+                Err(_) => {
+                    println!("Sorry, I couldn't understand you.");
+                    continue;
+                }
+            };
 
             // Attempt to create client
-            println!("Attempting to join {}:{}...", ip, port);
-            match Client::new(ip.as_str(), port) {
-                // Created successfully
+            println!("Attempting to join connect to {}...", addr);
+            match Client::new(&addr) {
                 Ok(c) => {
                     client = c;
                     break;
                 }
 
-                // There was a problem
                 Err(_) => {
+                    // Option to try again or quit to main menu
                     println!("There was a problem joining the host.");
                     println!("Would you like to (T)ry again or (R)eturn to the main menu?");
 

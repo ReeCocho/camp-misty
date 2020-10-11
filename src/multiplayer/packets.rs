@@ -4,12 +4,12 @@ use serde::{Deserialize, Serialize};
 use std::io::prelude::*;
 
 /// Function to write the contents of a structure over a TCP connection.
-pub fn write_over_tcp<T>(stream: &mut std::net::TcpStream, data: &T)
+pub fn write_over_tcp<T>(stream: &mut std::net::TcpStream, val: &T)
 where
     T: Serialize,
 {
     // Convert the data to a JSON string
-    let serialized = serde_json::to_string(data).expect("Serialization of structure failed!");
+    let serialized = serde_json::to_string(val).expect("Serialization of structure failed!");
 
     // Create a buffer to hold size of serialized data and the data itself
     let mut data = Vec::<u8>::with_capacity(4 + serialized.len());
@@ -22,16 +22,7 @@ where
     data.extend_from_slice(serialized.as_bytes());
 
     // Write data to TCP stream.
-    // NOTE: Not all byte might be written at once, so we need to loop until all are written.
-    let mut pos: usize = 0;
-    while pos < data.len() {
-        match stream.write(&data[pos..]) {
-            Ok(n) => {
-                pos += n;
-            }
-            Err(_) => panic!("Error writing data to TCP stream!"),
-        }
-    }
+    stream.write_all(&data).expect("Error writing data to TCP stream!");
 }
 
 /// Function to read the contents of a structure from a TCP stream.

@@ -19,10 +19,9 @@ pub struct Server {
 
 impl Server {
     /// Constructor.
-    pub fn new(port: u32) -> Result<Server, ServerError> {
+    pub fn new(port: u16) -> Result<Server, ServerError> {
         // Initialize TCP listener
-        let port_as_str = port.to_string();
-        match std::net::TcpListener::bind(String::from("0.0.0.0:") + port_as_str.as_str()) {
+        match std::net::TcpListener::bind(std::net::SocketAddr::from(([0, 0, 0, 0], port))) {
             // Listener was created successfully.
             Ok(listener) => Ok(Server {
                 state: GameState::new(),
@@ -58,10 +57,10 @@ impl Server {
             println!("Please enter the port you wish to use.");
 
             // Loop to get port
-            let port: u32;
+            let port: u16;
             loop {
                 // Convert to int
-                match read_str().parse::<u32>() {
+                match read_str().parse::<u16>() {
                     // Port is valid
                     Ok(i) => {
                         port = i;
