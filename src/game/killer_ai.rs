@@ -31,7 +31,7 @@ impl<'a> KillerAI {
         let last_result: (RoundResult, usize);
         {
             let state = self.state.borrow();
-            last_result = state.last_result.clone();
+            last_result = state.last_result;
         }
 
         // If a car part was found in the last round, remove that section

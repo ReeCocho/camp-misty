@@ -67,28 +67,12 @@ pub fn net_play(
     }
     // Killer wins
     else if res.0 == RoundResult::Caught {
-        if player_type == PlayerType::Victim {
-            println!("Noooo!!! The killer slices your back and you fall dead...");
-            print_lose();
-        } else {
-            println!(
-                "Muahahahaha!!! You slice the victim across their back, and they fall dead..."
-            );
-            print_win();
-        }
-
+        killer_win_message(player_type);
         return true;
     }
     // Victim wins
     else if res.0 == RoundResult::AllPartsFound {
-        if player_type == PlayerType::Victim {
-            println!("Yes!!! You found all of the car parts and are able to escape Camp Misty!");
-            print_win();
-        } else {
-            println!("No!!! The victim found all the car parts and escaped Camp Misty!");
-            print_lose();
-        }
-
+        victim_win_message(player_type);
         return true;
     }
 

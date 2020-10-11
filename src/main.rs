@@ -1,5 +1,6 @@
 pub mod game;
 pub mod multiplayer;
+pub mod singleplayer;
 pub mod util;
 
 use multiplayer::client::*;
@@ -11,14 +12,15 @@ fn main() {
 
     // Game loop over choices
     loop {
-        // Ask for host, client, instructions, or quit
+        // Ask for host, client, singleplayer instructions, or quit
         println!("          (H)ost a game");
         println!("          (J)oin a game");
+        println!("          (S)ingleplayer");
         println!("          (I)nstructions");
         println!("          (Q)uit");
 
         // Determine selection
-        match util::pick_char(&['H', 'J', 'Q', 'I'], "Sorry, that isn't an option.") {
+        match util::pick_char(&['H', 'J', 'Q', 'I', 'S'], "Sorry, that isn't an option.") {
             // Host a game
             'H' => {
                 // Host game
@@ -32,6 +34,15 @@ fn main() {
             'J' => {
                 // Join game
                 Client::join_game();
+
+                // Print title screen for main menu when finished
+                util::print_title_screen();
+            }
+
+            // Singleplayer
+            'S' => {
+                // Play singleplayer
+                singleplayer::play_singleplayer();
 
                 // Print title screen for main menu when finished
                 util::print_title_screen();

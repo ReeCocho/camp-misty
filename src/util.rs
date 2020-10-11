@@ -1,3 +1,5 @@
+use crate::multiplayer::packets::*;
+
 /// Helper function to read user input.
 pub fn read_str() -> String {
     print!("> ");
@@ -42,6 +44,32 @@ pub fn pick_char(valid_chars: &[char], err_msg: &str) -> char {
 
         // Unable to read input
         println!("{}", err_msg);
+    }
+}
+
+/// Prints a message when the vitim wins.
+///
+/// The only arguments is the type of player "we" are.
+pub fn victim_win_message(player_type: PlayerType) {
+    if player_type == PlayerType::Victim {
+        println!("Yes!!! You found all of the car parts and are able to escape Camp Misty!");
+        print_win();
+    } else {
+        println!("No!!! The victim found all the car parts and escaped Camp Misty!");
+        print_lose();
+    }
+}
+
+/// Prints a message when the killer wins.
+///
+/// The only arguments is the type of player "we" are.
+pub fn killer_win_message(player_type: PlayerType) {
+    if player_type == PlayerType::Victim {
+        println!("Noooo!!! The killer slices your back and you fall dead...");
+        print_lose();
+    } else {
+        println!("Muahahahaha!!! You slice the victim across their back, and they fall dead...");
+        print_win();
     }
 }
 

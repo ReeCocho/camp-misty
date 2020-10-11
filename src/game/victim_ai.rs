@@ -69,7 +69,7 @@ impl VictimAI {
         let last_result: (RoundResult, usize);
         {
             let state = self.state.borrow();
-            last_result = state.last_result.clone();
+            last_result = state.last_result;
         }
 
         // Determine move based off of last round result

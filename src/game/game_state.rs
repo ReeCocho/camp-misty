@@ -272,7 +272,7 @@ impl GameState {
 
         // Update last result
         self.last_result = (
-            round_result.clone(),
+            round_result,
             if car_part { victim.0 } else { SECTION_COUNT },
         );
 
@@ -284,7 +284,7 @@ impl GameState {
 }
 
 /// A result of a round in the game
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum RoundResult {
     /// Nothing happens.
     Nothing,
