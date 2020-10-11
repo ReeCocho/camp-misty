@@ -1,26 +1,26 @@
 use rand::Rng;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use crate::game::game_state::*;
 use crate::game::section::*;
 
 /// An AI version of a victim to be used for testing/single player.
 pub struct VictimAI {
-    /// Game state to play in.
-    state: Rc<RefCell<GameState>>,
-
     /// List of all unvisted sections and sub sections
     unvisited: Vec<(usize, usize)>,
+}
+
+impl Default for VictimAI {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl VictimAI {
     /// Constructor.
     ///
     /// The only argument is a reference to the game state to play in.
-    pub fn new(state: Rc<RefCell<GameState>>) -> VictimAI {
+    pub fn new() -> VictimAI {
         let mut ai = VictimAI {
-            state,
             unvisited: Vec::<(usize, usize)>::new(),
         };
 
@@ -36,7 +36,7 @@ impl VictimAI {
     }
 
     /// Have the victim place a trap randomly.
-    pub fn place_trap(&self) {
+    pub fn place_trap(&self, state: &mut GameState) {
         // Generate a list of sections that still need to be visited
         let mut sections = Vec::<usize>::new();
         for unvisited in &self.unvisited {
@@ -53,27 +53,20 @@ impl VictimAI {
         // Pick a random section in that list
         if !sections.is_empty() {
             let ind = rand::thread_rng().gen_range(0, sections.len());
-            self.state.borrow_mut().place_trap(sections[ind]);
+            state.place_trap(sections[ind]);
         }
         // Or pick a default if we have visited everything
         else {
-            self.state.borrow_mut().place_trap(0);
+            state.place_trap(0);
         }
     }
 
     /// Play a round of the game.
     ///
     /// Returns a tuple containing what move the AI decided to take.
-    pub fn play(&mut self) -> (usize, usize) {
-        // Get last game result values
-        let last_result: (RoundResult, usize);
-        {
-            let state = self.state.borrow();
-            last_result = state.last_result;
-        }
-
+    pub fn play(&mut self, state: &mut GameState) -> (usize, usize) {
         // Determine move based off of last round result
-        let tup = match last_result.0 {
+        let tup = match state.last_result.0 {
             // Normal round logic
             RoundResult::Nothing
             | RoundResult::TrapTriggered
@@ -130,7 +123,6 @@ impl VictimAI {
         // If the move we are going to make results in us finding a part, we can remove all
         // section/sub-section tuples that are in the same section we are searching
         {
-            let state = self.state.borrow();
             if state.sections[tup.0].sub_sections[tup.1].part {
                 // To do this, we take advantage of the guarantee made during construction of the
                 // victim ai: the unvisited tuples are sorted by section. This means we can loop
