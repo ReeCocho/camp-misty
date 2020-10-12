@@ -144,7 +144,10 @@ impl GameState {
             return None;
         }
 
-        self.sections[section].sub_sections.iter().position(|s| s.letter == id)
+        self.sections[section]
+            .sub_sections
+            .iter()
+            .position(|s| s.letter == id)
     }
 
     /// Get a tuple containing the index of a section and sub-section respectively by letter identifier.

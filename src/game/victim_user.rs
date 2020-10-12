@@ -5,21 +5,15 @@ use crate::util::*;
 pub fn play_victim(state: &GameState) -> (usize, usize) {
     // Print out a special message depending on what happened last round
     match state.last_result.0 {
-        RoundResult::AllPartsFound => {
-            println!("Wow! You did it! You found all the car parts and escaped Camp Misty! Congradulations, you win!");
-        }
-
-        RoundResult::Caught => {
-            println!("Oh no! The killer caught you! With a blood curdling scream, you fall dead... You lose!");
-        }
-
         RoundResult::ChaseBegins(section) => {
             if state.last_result.1 != SECTION_COUNT {
                 println!("Nice! You found a car part!");
             }
             println!(
-                "Oh no! The killer is in the {} with you! They're right behind you! Where would you like to hide?", 
-                state.sections[section].name);
+                "Oh no! The killer is in the {} with you! They're right behind you!",
+                state.sections[section].name
+            );
+            println!("Where would you like to hide?");
         }
 
         RoundResult::Evaded => {
@@ -53,10 +47,14 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
             if state.last_result.1 != SECTION_COUNT {
                 println!("Nice! You found a car part!");
             }
-            println!("Oh no! You ran right into the killer and they cut you across the back as you tried to get away!");
+            println!("Oh no! You ran right into the killer and they cut you across");
+            println!("the back as you tried to get away!");
             println!("You have a nasty wound. If they catch you again, you won't survive...");
             println!("Now, which location would you like to check?");
         }
+
+        // Win conditions are ignored
+        _ => {}
     }
 
     // Logic for chosing a location

@@ -15,21 +15,13 @@ pub fn play_killer(state: &mut GameState) -> (usize, usize) {
 
     // Print out a special message depending on what happened last round
     match state.last_result.0 {
-        RoundResult::AllPartsFound => {
-            println!("Oh no! The victim found all the car parts and was able to escape! You lose!");
-        }
-
-        RoundResult::Caught => {
-            println!(
-                "Yes! You caught the victim, sinking your blade deep into their back... You win!"
-            );
-        }
-
         RoundResult::ChaseBegins(section) => {
             found_part_msg();
+            println!("Muahaha! You have the victim in your sights!");
             println!(
-                "Muahaha! You have the victim in your sights! Where in the {} would you like to search for them?", 
-                state.sections[section].name);
+                "Where in the {} would you like to search for them?",
+                state.sections[section].name
+            );
         }
 
         RoundResult::Evaded => {
@@ -46,7 +38,8 @@ pub fn play_killer(state: &mut GameState) -> (usize, usize) {
 
         RoundResult::TrapTriggered => {
             found_part_msg();
-            println!("Oh no! You stepped right into the victims trap! You spent the round getting yourself out.");
+            println!("Oh no! You stepped right into the victims trap!");
+            println!("You spent the round getting yourself out.");
             println!("Now, which location would you like to check?");
         }
 
@@ -56,6 +49,9 @@ pub fn play_killer(state: &mut GameState) -> (usize, usize) {
             println!("They are wounded. If you find them again, you win...");
             println!("Now, which location would you like to check?");
         }
+
+        // Win conditions are ignored
+        _ => {}
     }
 
     // Determine the round type
