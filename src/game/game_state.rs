@@ -127,29 +127,12 @@ impl GameState {
     /// Determine if any section of the map is trapped.
     pub fn trap_exists(&self) -> bool {
         // Loop over all sections
-        for section in &self.sections {
-            // Check if the section is trapped
-            if section.trapped {
-                return true;
-            }
-        }
-
-        // No section was found that is trapped
-        false
+        self.sections.iter().any(|s| s.trapped)
     }
 
     /// Get the index of a section by its letter identifier.
     pub fn get_section_by_letter(&self, id: char) -> Option<usize> {
-        // Loop over all sections
-        for (i, section) in self.sections.iter().enumerate() {
-            // If the letter matches, choose that one
-            if section.letter == id {
-                return Some(i);
-            }
-        }
-
-        // Didn't find a section
-        None
+        self.sections.iter().position(|s| s.letter == id)
     }
 
     /// Get the index of a sub section by its letter identifier.
@@ -161,16 +144,7 @@ impl GameState {
             return None;
         }
 
-        // Loop over all sub sections in the section
-        for (i, sub_section) in self.sections[section].sub_sections.iter().enumerate() {
-            // If the letter matches, choose that one
-            if sub_section.letter == id {
-                return Some(i);
-            }
-        }
-
-        // Didn't find a sub section
-        None
+        self.sections[section].sub_sections.iter().position(|s| s.letter == id)
     }
 
     /// Get a tuple containing the index of a section and sub-section respectively by letter identifier.
@@ -182,21 +156,12 @@ impl GameState {
         sub_section_char: char,
     ) -> Option<(usize, usize)> {
         // Loop over every section
-        for (i, section) in self.sections.iter().enumerate() {
-            // If the section is the one we are looking for...
-            if section.letter == section_char {
-                // Loop over all sub sections in the section
-                for (j, sub_section) in self.sections.iter().enumerate() {
-                    // If the sub section is the one we are looking for...
-                    if sub_section.letter == sub_section_char {
-                        // Return that section/sub-section pair
-                        return Some((i, j));
-                    }
-                }
+        if let Some(i) = self.get_section_by_letter(section_char) {
+            if let Some(j) = self.get_sub_section_by_letter(i, sub_section_char) {
+                return Some((i, j));
             }
         }
 
-        // Couldn't find the section/sub-section pair
         None
     }
 
