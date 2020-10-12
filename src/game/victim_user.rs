@@ -23,7 +23,7 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
 
         RoundResult::Evaded => {
             found_part_msg();
-            // NOTE: We don't put anything super special here because it's handled by victim_place_trap()
+            println!("What a relief! You evaded the killer!");
             println!("Now, which location would you like to check?");
         }
 
@@ -132,38 +132,4 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
             (section_ind, sub_section_ind)
         }
     }
-}
-
-/// Place a trap as a victim
-pub fn victim_place_trap(state: &mut GameState) -> usize {
-    // Flavor
-    println!("What a relief! You evaded the killer and found a trap!");
-    println!("Where would you like to place it?");
-
-    // Print all sections and construct vec with all section characters
-    let mut section_chars = Vec::<char>::new();
-    for section in &state.sections {
-        println!("{}?", section.name);
-        section_chars.push(section.letter);
-    }
-
-    // Ask user for character
-    let section_char = pick_char(
-        &section_chars,
-        "Sorry, that isn't a location! Choose a location.",
-    );
-
-    // Get the section by character and place the trap
-    // NOTE: We don't need to do a 'None' check here because the 'pick_char' function guarantees we choose
-    // a valid section
-    let section_ind = state
-        .get_section_by_letter(section_char)
-        .expect("Section not found!");
-
-    state.place_trap(section_ind);
-
-    // Flavor
-    println!("Trapped has been placed!");
-
-    section_ind
 }

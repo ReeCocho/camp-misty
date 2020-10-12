@@ -28,32 +28,6 @@ impl VictimAI {
         ai
     }
 
-    /// Have the victim place a trap randomly.
-    pub fn place_trap(&self, state: &mut GameState) {
-        // Generate a list of sections that still need to be visited
-        let mut sections = Vec::<usize>::new();
-        for unvisited in &self.unvisited {
-            // Check if we already have that section
-            if sections.iter().any(|e| *e == unvisited.0) {
-                continue;
-            }
-            // Add the section if we don't have it
-            else {
-                sections.push(unvisited.0);
-            }
-        }
-
-        // Pick a random section in that list
-        if !sections.is_empty() {
-            let ind = rand::thread_rng().gen_range(0, sections.len());
-            state.place_trap(sections[ind]);
-        }
-        // Or pick a default if we have visited everything
-        else {
-            state.place_trap(0);
-        }
-    }
-
     /// Play a round of the game.
     ///
     /// Returns a tuple containing what move the AI decided to take.

@@ -48,21 +48,8 @@ pub fn net_play(
         )
     };
 
-    // Place trap if evaded
-    if res.result == RoundResult::Evaded {
-        // If we are the victim, place teh trap and then tell the other player where the trap was placed
-        if player_type == PlayerType::Victim {
-            let trap_loc = victim_place_trap(state) as TrapPacket;
-            write_over_tcp::<TrapPacket>(stream, &trap_loc);
-        }
-        // If we are the killer, have the other player tell us where they placed the trap
-        else {
-            let trap_loc = read_over_tcp::<TrapPacket>(stream);
-            state.place_trap(trap_loc as usize);
-        }
-    }
     // Killer wins
-    else if res.result == RoundResult::Caught {
+    if res.result == RoundResult::Caught {
         killer_win_message(player_type);
         return true;
     }

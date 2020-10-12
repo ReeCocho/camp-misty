@@ -163,17 +163,6 @@ impl GameState {
         self.part_count += 1;
     }
 
-    /// Place a trap in a section.
-    pub fn place_trap(&mut self, section: usize) {
-        self.sections[section].trapped = true;
-    }
-
-    /// Determine if any section of the map is trapped.
-    pub fn trap_exists(&self) -> bool {
-        // Loop over all sections
-        self.sections.iter().any(|s| s.trapped)
-    }
-
     /// Get the index of a section by its letter identifier.
     pub fn get_section_by_letter(&self, id: char) -> Option<usize> {
         self.sections.iter().position(|s| s.letter == id)
@@ -248,35 +237,28 @@ impl GameState {
             round_result = RoundResult::AllPartsFound;
         }
 
-        // If the killer chooses a trapped section and the victim isn't winning the killer is trapped
-        if self.sections[killer.0].trapped && round_result != RoundResult::AllPartsFound {
-            // Untrap section
-            self.sections[killer.0].trapped = false;
-            round_result = RoundResult::TrapTriggered;
-        } else {
-            // If the killer and the victim chose the same exact place...
-            if victim.0 == killer.0 && victim.1 == killer.1 {
-                // If the victim has already been wounded, they are caught (priority over winning)
-                if self.victim_is_wounded {
-                    round_result = RoundResult::Caught;
-                }
-                // If the victim hasn't been wounded yet, wound them (unless the victim is winning, in which case do nothing)
-                else if round_result != RoundResult::AllPartsFound {
-                    self.victim_is_wounded = true;
-                    round_result = RoundResult::Wounded;
-                }
+        // If the killer and the victim chose the same exact place...
+        if victim.0 == killer.0 && victim.1 == killer.1 {
+            // If the victim has already been wounded, they are caught (priority over winning)
+            if self.victim_is_wounded {
+                round_result = RoundResult::Caught;
             }
-            // If a chase was occuring, the victim evaded (ignore if player is winning)
-            else if round_result != RoundResult::AllPartsFound
-                && std::mem::discriminant(&self.last_result.result)
-                    == std::mem::discriminant(&RoundResult::ChaseBegins(0))
-            {
-                round_result = RoundResult::Evaded;
+            // If the victim hasn't been wounded yet, wound them (unless the victim is winning, in which case do nothing)
+            else if round_result != RoundResult::AllPartsFound {
+                self.victim_is_wounded = true;
+                round_result = RoundResult::Wounded;
             }
-            // If the victim and killer chose the same section, a chase begins (priority over player winning)
-            else if victim.0 == killer.0 && round_result != RoundResult::AllPartsFound {
-                round_result = RoundResult::ChaseBegins(victim.0);
-            }
+        }
+        // If a chase was occuring, the victim evaded (ignore if player is winning)
+        else if round_result != RoundResult::AllPartsFound
+            && std::mem::discriminant(&self.last_result.result)
+                == std::mem::discriminant(&RoundResult::ChaseBegins(0))
+        {
+            round_result = RoundResult::Evaded;
+        }
+        // If the victim and killer chose the same section, a chase begins (priority over player winning)
+        else if victim.0 == killer.0 && round_result != RoundResult::AllPartsFound {
+            round_result = RoundResult::ChaseBegins(victim.0);
         }
 
         // Update last result
@@ -322,12 +304,8 @@ mod test {
                 // Submit moves to the game state
                 let res = state.play(victim_move, killer_move);
 
-                // Place trap if evaded
-                if res.result == super::RoundResult::Evaded {
-                    victim.place_trap(&mut state);
-                }
                 // Break if someone won
-                else if res.result == super::RoundResult::Caught {
+                if res.result == super::RoundResult::Caught {
                     killer_wins += 1;
                     break;
                 } else if res.result == super::RoundResult::AllPartsFound {

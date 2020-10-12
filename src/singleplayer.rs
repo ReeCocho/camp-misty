@@ -44,12 +44,8 @@ pub fn play_singleplayer() {
                 // Submit moves to the game state
                 let res = state.play(victim_move, killer_move);
 
-                // Place trap if evaded
-                if res.result == RoundResult::Evaded {
-                    victim.place_trap(&mut state);
-                }
                 // Break if someone won
-                else if res.result == RoundResult::Caught {
+                if res.result == RoundResult::Caught {
                     killer_win_message(player_type);
                     break;
                 } else if res.result == RoundResult::AllPartsFound {
@@ -72,12 +68,8 @@ pub fn play_singleplayer() {
                 // Submit moves to the game state
                 let res = state.play(victim_move, killer_move);
 
-                // Place trap if evaded
-                if res.result == RoundResult::Evaded {
-                    victim_place_trap(&mut state);
-                }
                 // Break if someone won
-                else if res.result == RoundResult::Caught {
+                if res.result == RoundResult::Caught {
                     killer_win_message(player_type);
                     break;
                 } else if res.result == RoundResult::AllPartsFound {

@@ -8,9 +8,6 @@ pub struct Section {
 
     // Sub-sections.
     pub sub_sections: Vec<SubSection>,
-
-    /// A flag indicating if the section is trapped or not.
-    pub trapped: bool,
 }
 
 /// A sub-section contained within a section.
@@ -37,7 +34,6 @@ impl Section {
             name,
             letter,
             sub_sections,
-            trapped: false,
         }
     }
 }
