@@ -293,8 +293,6 @@ pub type PlayResult = std::result::Result<(RoundResult, usize), PlayError>;
 mod test {
     use crate::game::killer_ai::*;
     use crate::game::victim_ai::*;
-    use std::cell::RefCell;
-    use std::rc::Rc;
 
     /// Runs a simulation of the game with AI players.
     #[test]
@@ -309,28 +307,27 @@ mod test {
         // Play matches
         for _ in 0..GAME_COUNT {
             // Create a game state
-            let state = Rc::new(RefCell::new(super::GameState::new()));
-            state.borrow_mut().gen_state();
+            let mut state = super::GameState::new();
+            state.gen_state();
 
             // Create AI plays
-            let mut killer = KillerAI::new(state.clone());
-            let mut victim = VictimAI::new(state.clone());
+            let mut killer = KillerAI::new();
+            let mut victim = VictimAI::new();
 
             // Play game until there is a winner
             loop {
                 // Have each AI make a move
-                let killer_move = killer.play();
-                let victim_move = victim.play();
+                let killer_move = killer.play(&mut state);
+                let victim_move = victim.play(&mut state);
 
                 // Submit moves to the game state
                 let res = state
-                    .borrow_mut()
                     .play(victim_move, killer_move)
                     .expect("Something went wrong during play");
 
                 // Place trap if evaded
                 if res.0 == super::RoundResult::Evaded {
-                    victim.place_trap();
+                    victim.place_trap(&mut state);
                 }
                 // Break if someone won
                 else if res.0 == super::RoundResult::Caught {

@@ -1,38 +1,34 @@
 use rand::Rng;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use crate::game::game_state::*;
 use crate::game::section::*;
 
 /// An AI version of the killer to be used in testing/single player
 pub struct KillerAI {
-    /// The game state the killer plays in
-    state: Rc<RefCell<GameState>>,
-
     /// List of sections to check
     sections: Vec<usize>,
+}
+
+impl Default for KillerAI {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<'a> KillerAI {
     /// Constructor.
     ///
     /// Only argument is the game state.
-    pub fn new(state: Rc<RefCell<GameState>>) -> KillerAI {
+    pub fn new() -> KillerAI {
         KillerAI {
-            state,
             sections: (0..SECTION_COUNT).collect(),
         }
     }
 
     /// Play a round of the game as the killer.
-    pub fn play(&mut self) -> (usize, usize) {
+    pub fn play(&mut self, state: &GameState) -> (usize, usize) {
         // Get last game result values
-        let last_result: (RoundResult, usize);
-        {
-            let state = self.state.borrow();
-            last_result = state.last_result;
-        }
+        let last_result = &state.last_result;
 
         // If a car part was found in the last round, remove that section
         // from our list of sections to check

@@ -1,6 +1,4 @@
 use rand::Rng;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use crate::game::game_state::*;
 use crate::game::killer_ai::*;
@@ -28,30 +26,29 @@ pub fn play_singleplayer() {
     };
 
     // Create game state and generate random state
-    let state = Rc::new(RefCell::new(GameState::new()));
-    state.borrow_mut().gen_state();
+    let mut state = GameState::new();
+    state.gen_state();
 
     // Play as either victim or killer
     match player_type {
         PlayerType::Killer => {
             // Create victim
-            let mut victim = VictimAI::new(state.clone());
+            let mut victim = VictimAI::new();
 
             // Play game until there is a winner
             loop {
                 // Make moves
-                let killer_move = play_killer(&mut state.borrow_mut());
-                let victim_move = victim.play();
+                let killer_move = play_killer(&mut state);
+                let victim_move = victim.play(&mut state);
 
                 // Submit moves to the game state
                 let res = state
-                    .borrow_mut()
                     .play(victim_move, killer_move)
                     .expect("Something went wrong during play");
 
                 // Place trap if evaded
                 if res.0 == RoundResult::Evaded {
-                    victim.place_trap();
+                    victim.place_trap(&mut state);
                 }
                 // Break if someone won
                 else if res.0 == RoundResult::Caught {
@@ -66,23 +63,22 @@ pub fn play_singleplayer() {
 
         PlayerType::Victim => {
             // Create killer
-            let mut killer = KillerAI::new(state.clone());
+            let mut killer = KillerAI::new();
 
             // Play game until there is a winner
             loop {
                 // Make moves
-                let killer_move = killer.play();
-                let victim_move = play_victim(&state.borrow_mut());
+                let killer_move = killer.play(&state);
+                let victim_move = play_victim(&state);
 
                 // Submit moves to the game state
                 let res = state
-                    .borrow_mut()
                     .play(victim_move, killer_move)
                     .expect("Something went wrong during play");
 
                 // Place trap if evaded
                 if res.0 == RoundResult::Evaded {
-                    victim_place_trap(&mut state.borrow_mut());
+                    victim_place_trap(&mut state);
                 }
                 // Break if someone won
                 else if res.0 == RoundResult::Caught {
