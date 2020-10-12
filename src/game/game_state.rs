@@ -1,26 +1,72 @@
 use rand::Rng;
 
-use crate::game::section::*;
-use crate::game::sub_section::*;
-
-/// Total number of sections in the game.
-pub const SECTION_COUNT: usize = 5;
+use crate::game::sections::*;
 
 /// Structure describing the current state of the game.
 pub struct GameState {
     // Sections within the game.
-    pub sections: [Section; SECTION_COUNT],
+    pub sections: Vec<Section>,
 
-    /// Result of the last round played. Also contains the index
-    /// of the section the car part was found at. If no part was
-    /// found, it will be equal to SECTION_COUNT.
-    pub last_result: (RoundResult, usize),
+    /// Result of the last round played.
+    pub last_result: PlayResult,
 
     /// Total number of hidden parts
     pub part_count: usize,
 
     /// Flag indicating the victim is wounded
     pub victim_is_wounded: bool,
+}
+
+/// The result of a previous round and an optional car part if one was found.
+#[derive(Copy, Clone)]
+pub struct PlayResult {
+    /// Result of the round.
+    pub result: RoundResult,
+
+    /// Index of the part (if found).
+    pub part_section_index: Option<usize>,
+}
+
+/// A result of a round in the game
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum RoundResult {
+    /// Nothing happens.
+    Nothing,
+
+    /// The killer caught the victim.
+    Caught,
+
+    /// The killer wounded the victim.
+    Wounded,
+
+    /// The victim found all the parts.
+    AllPartsFound,
+
+    /// The victim evaded the killer during a chase.
+    Evaded,
+
+    /// The victim and killer chose the same section, beginning a chase.
+    ///
+    /// Includes the index of the section where the chase is going to take place.
+    ChaseBegins(usize),
+
+    /// The killer triggered a trap.
+    TrapTriggered,
+}
+
+impl Default for PlayResult {
+    fn default() -> Self {
+        PlayResult::new(RoundResult::Nothing, None)
+    }
+}
+
+impl PlayResult {
+    pub fn new(result: RoundResult, part_section_index: Option<usize>) -> Self {
+        PlayResult {
+            result,
+            part_section_index,
+        }
+    }
 }
 
 impl Default for GameState {
@@ -33,69 +79,67 @@ impl GameState {
     /// Constructor.
     pub fn new() -> GameState {
         // Create sections
-        let cabin = Section::new(
-            String::from("(C)abin"),
-            'C',
-            [
-                SubSection::new(String::from("(B)edroom"), 'B', false),
-                SubSection::new(String::from("(K)itchen"), 'K', false),
-                SubSection::new(String::from("(T)oilet"), 'T', false),
-                SubSection::new(String::from("(C)loset"), 'C', false),
-                SubSection::new(String::from("(A)ttic"), 'A', false),
-            ],
-        );
-
-        let lake_misty = Section::new(
-            String::from("(L)ake Misty"),
-            'L',
-            [
-                SubSection::new(String::from("(D)ock"), 'D', false),
-                SubSection::new(String::from("(B)oat"), 'B', false),
-                SubSection::new(String::from("(E)ast shore"), 'E', false),
-                SubSection::new(String::from("(W)est shore"), 'W', false),
-                SubSection::new(String::from("(S)outh shore"), 'S', false),
-            ],
-        );
-
-        let abandoned_manor = Section::new(
-            String::from("(A)bandoned manor"),
-            'A',
-            [
-                SubSection::new(String::from("(M)aster bedroom"), 'M', false),
-                SubSection::new(String::from("(D)ining hall"), 'D', false),
-                SubSection::new(String::from("(B)asement"), 'B', false),
-                SubSection::new(String::from("(K)itchen"), 'K', false),
-                SubSection::new(String::from("(F)ourier"), 'F', false),
-            ],
-        );
-
-        let bonfire = Section::new(
-            String::from("(B)onfire"),
-            'B',
-            [
-                SubSection::new(String::from("(S)hrubs"), 'S', false),
-                SubSection::new(String::from("(C)ouch"), 'C', false),
-                SubSection::new(String::from("(L)ogs"), 'L', false),
-                SubSection::new(String::from("(T)rees"), 'T', false),
-                SubSection::new(String::from("(B)lankets"), 'B', false),
-            ],
-        );
-
-        let old_forest = Section::new(
-            String::from("(O)ld forest"),
-            'O',
-            [
-                SubSection::new(String::from("(P)ond"), 'P', false),
-                SubSection::new(String::from("(C)ave"), 'C', false),
-                SubSection::new(String::from("(S)hrine"), 'S', false),
-                SubSection::new(String::from("(F)airy circle"), 'F', false),
-                SubSection::new(String::from("(H)ollow log"), 'H', false),
-            ],
-        );
+        let sections = vec![
+            Section::new(
+                String::from("(C)abin"),
+                'C',
+                vec![
+                    SubSection::new(String::from("(B)edroom"), 'B', false),
+                    SubSection::new(String::from("(K)itchen"), 'K', false),
+                    SubSection::new(String::from("(T)oilet"), 'T', false),
+                    SubSection::new(String::from("(C)loset"), 'C', false),
+                    SubSection::new(String::from("(A)ttic"), 'A', false),
+                ],
+            ),
+            Section::new(
+                String::from("(L)ake Misty"),
+                'L',
+                vec![
+                    SubSection::new(String::from("(D)ock"), 'D', false),
+                    SubSection::new(String::from("(B)oat"), 'B', false),
+                    SubSection::new(String::from("(E)ast shore"), 'E', false),
+                    SubSection::new(String::from("(W)est shore"), 'W', false),
+                    SubSection::new(String::from("(S)outh shore"), 'S', false),
+                ],
+            ),
+            Section::new(
+                String::from("(A)bandoned manor"),
+                'A',
+                vec![
+                    SubSection::new(String::from("(M)aster bedroom"), 'M', false),
+                    SubSection::new(String::from("(D)ining hall"), 'D', false),
+                    SubSection::new(String::from("(B)asement"), 'B', false),
+                    SubSection::new(String::from("(K)itchen"), 'K', false),
+                    SubSection::new(String::from("(F)ourier"), 'F', false),
+                ],
+            ),
+            Section::new(
+                String::from("(B)onfire"),
+                'B',
+                vec![
+                    SubSection::new(String::from("(S)hrubs"), 'S', false),
+                    SubSection::new(String::from("(C)ouch"), 'C', false),
+                    SubSection::new(String::from("(L)ogs"), 'L', false),
+                    SubSection::new(String::from("(T)rees"), 'T', false),
+                    SubSection::new(String::from("(B)lankets"), 'B', false),
+                ],
+            ),
+            Section::new(
+                String::from("(O)ld forest"),
+                'O',
+                vec![
+                    SubSection::new(String::from("(P)ond"), 'P', false),
+                    SubSection::new(String::from("(C)ave"), 'C', false),
+                    SubSection::new(String::from("(S)hrine"), 'S', false),
+                    SubSection::new(String::from("(F)airy circle"), 'F', false),
+                    SubSection::new(String::from("(H)ollow log"), 'H', false),
+                ],
+            ),
+        ];
 
         GameState {
-            sections: [cabin, lake_misty, abandoned_manor, bonfire, old_forest],
-            last_result: (RoundResult::Nothing, SECTION_COUNT),
+            sections,
+            last_result: PlayResult::new(RoundResult::Nothing, None),
             part_count: 0,
             victim_is_wounded: false,
         }
@@ -104,9 +148,9 @@ impl GameState {
     /// Generate random game state.
     pub fn gen_state(&mut self) {
         // Distribute car parts
-        for i in 0..SECTION_COUNT {
+        for i in 0..self.sections.len() {
             // Randomly choose which sub section gets the part
-            let rand_ind = rand::thread_rng().gen_range(0, SUB_SECTION_COUNT);
+            let rand_ind = rand::thread_rng().gen_range(0, self.sections[i].sub_sections.len());
 
             // Place the part in the sub section
             self.hide_part(i, rand_ind);
@@ -140,7 +184,7 @@ impl GameState {
     /// The first argument is the index of the section to check and the second argument is the letter of the sub section.
     pub fn get_sub_section_by_letter(&self, section: usize, id: char) -> Option<usize> {
         // Out of bounds section
-        if section >= SECTION_COUNT {
+        if section >= self.sections.len() {
             return None;
         }
 
@@ -175,19 +219,16 @@ impl GameState {
     /// `killer` is a tuple containing the indices of the section and sub-section the victim is checking.
     pub fn play(&mut self, victim: (usize, usize), killer: (usize, usize)) -> PlayResult {
         // Indices must be within bounds
-        if victim.0 >= SECTION_COUNT
-            || victim.1 >= SUB_SECTION_COUNT
-            || killer.0 >= SECTION_COUNT
-            || killer.1 >= SUB_SECTION_COUNT
-        {
-            return Err(PlayError::OutOfBounds);
-        }
+        assert!(
+            victim.0 < self.sections.len()
+                && victim.1 < self.sections[victim.0].sub_sections.len()
+                && killer.0 < self.sections.len()
+                && killer.1 < self.sections[killer.0].sub_sections.len()
+        );
 
         // Special check for chase round
-        if let RoundResult::ChaseBegins(section) = self.last_result.0 {
-            if victim.0 != section || killer.0 != section {
-                return Err(PlayError::OutOfBounds);
-            }
+        if let RoundResult::ChaseBegins(section) = self.last_result.result {
+            assert!(victim.0 == section && killer.0 == section);
         }
 
         // Get the car part in the section
@@ -227,7 +268,7 @@ impl GameState {
             }
             // If a chase was occuring, the victim evaded (ignore if player is winning)
             else if round_result != RoundResult::AllPartsFound
-                && std::mem::discriminant(&self.last_result.0)
+                && std::mem::discriminant(&self.last_result.result)
                     == std::mem::discriminant(&RoundResult::ChaseBegins(0))
             {
                 round_result = RoundResult::Evaded;
@@ -239,57 +280,12 @@ impl GameState {
         }
 
         // Update last result
-        self.last_result = (
-            round_result,
-            if car_part { victim.0 } else { SECTION_COUNT },
-        );
+        let res = PlayResult::new(round_result, if car_part { Some(victim.0) } else { None });
+        self.last_result = res;
 
-        Ok((
-            round_result,
-            if car_part { victim.0 } else { SECTION_COUNT },
-        ))
+        res
     }
 }
-
-/// A result of a round in the game
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum RoundResult {
-    /// Nothing happens.
-    Nothing,
-
-    /// The killer caught the victim.
-    Caught,
-
-    /// The killer wounded the victim.
-    Wounded,
-
-    /// The victim found all the parts.
-    AllPartsFound,
-
-    /// The victim evaded the killer during a chase.
-    Evaded,
-
-    /// The victim and killer chose the same section, beginning a chase.
-    ///
-    /// Includes the index of the section where the chase is going to take place.
-    ChaseBegins(usize),
-
-    /// The killer triggered a trap.
-    TrapTriggered,
-}
-
-/// Types of errors to occur during play.
-#[derive(Debug)]
-pub enum PlayError {
-    OutOfBounds,
-}
-
-/// Result type of playing a round of the game.
-///
-/// Contains the round result and the index of the section containing the car part if found.
-///
-/// NOTE: If a car part was not found, the index will equal SECTION_COUNT
-pub type PlayResult = std::result::Result<(RoundResult, usize), PlayError>;
 
 /// Testing for game state.
 #[cfg(test)]
@@ -314,8 +310,8 @@ mod test {
             state.gen_state();
 
             // Create AI plays
-            let mut killer = KillerAI::new();
-            let mut victim = VictimAI::new();
+            let mut killer = KillerAI::new(&state);
+            let mut victim = VictimAI::new(&state);
 
             // Play game until there is a winner
             loop {
@@ -324,19 +320,17 @@ mod test {
                 let victim_move = victim.play(&mut state);
 
                 // Submit moves to the game state
-                let res = state
-                    .play(victim_move, killer_move)
-                    .expect("Something went wrong during play");
+                let res = state.play(victim_move, killer_move);
 
                 // Place trap if evaded
-                if res.0 == super::RoundResult::Evaded {
+                if res.result == super::RoundResult::Evaded {
                     victim.place_trap(&mut state);
                 }
                 // Break if someone won
-                else if res.0 == super::RoundResult::Caught {
+                else if res.result == super::RoundResult::Caught {
                     killer_wins += 1;
                     break;
-                } else if res.0 == super::RoundResult::AllPartsFound {
+                } else if res.result == super::RoundResult::AllPartsFound {
                     victim_wins += 1;
                     break;
                 }

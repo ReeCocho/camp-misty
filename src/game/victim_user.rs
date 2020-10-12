@@ -3,12 +3,17 @@ use crate::util::*;
 
 /// Play a round of the game as a victim, passing in the current game state.
 pub fn play_victim(state: &GameState) -> (usize, usize) {
+    // Convenience function for special print out
+    let found_part_msg = || {
+        if state.last_result.part_section_index.is_some() {
+            println!("Nice! You found a car part!");
+        }
+    };
+
     // Print out a special message depending on what happened last round
-    match state.last_result.0 {
+    match state.last_result.result {
         RoundResult::ChaseBegins(section) => {
-            if state.last_result.1 != SECTION_COUNT {
-                println!("Nice! You found a car part!");
-            }
+            found_part_msg();
             println!(
                 "Oh no! The killer is in the {} with you! They're right behind you!",
                 state.sections[section].name
@@ -17,17 +22,13 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
         }
 
         RoundResult::Evaded => {
-            if state.last_result.1 != SECTION_COUNT {
-                println!("Nice! You found a car part!");
-            }
+            found_part_msg();
             // NOTE: We don't put anything super special here because it's handled by victim_place_trap()
             println!("Now, which location would you like to check?");
         }
 
         RoundResult::Nothing => {
-            if state.last_result.1 != SECTION_COUNT {
-                println!("Nice! You found a car part!");
-            }
+            found_part_msg();
             println!(
                 "You carefully navigate the grounds of Camp Misty, searching for car parts..."
             );
@@ -35,18 +36,14 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
         }
 
         RoundResult::TrapTriggered => {
-            if state.last_result.1 != SECTION_COUNT {
-                println!("Nice! You found a car part!");
-            }
+            found_part_msg();
             println!("Ha, ha, ha! You hear the killer fall into your trap!");
             println!("You were safe that round.");
             println!("Now, which location would you like to check?");
         }
 
         RoundResult::Wounded => {
-            if state.last_result.1 != SECTION_COUNT {
-                println!("Nice! You found a car part!");
-            }
+            found_part_msg();
             println!("Oh no! You ran right into the killer and they cut you across");
             println!("the back as you tried to get away!");
             println!("You have a nasty wound. If they catch you again, you won't survive...");
@@ -60,7 +57,7 @@ pub fn play_victim(state: &GameState) -> (usize, usize) {
     // Logic for chosing a location
 
     // Determine round type
-    match state.last_result.0 {
+    match state.last_result.result {
         // Chase round!
         RoundResult::ChaseBegins(section) => {
             // Print all sub sections and construct a vec with all sub section characters

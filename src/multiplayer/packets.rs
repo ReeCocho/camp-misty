@@ -1,4 +1,3 @@
-use crate::game::game_state::*;
 use byteorder::{ByteOrder, LittleEndian};
 use serde::{Deserialize, Serialize};
 use std::io::prelude::*;
@@ -71,7 +70,7 @@ pub enum PlayerType {
 #[derive(Serialize, Deserialize)]
 pub struct GameStatePacket {
     // List of the spots the car parts are hidden in.
-    pub hidden_parts: [(u32, u32); SECTION_COUNT],
+    pub hidden_parts: Vec<(u32, u32)>,
 }
 
 impl Default for GameStatePacket {
@@ -84,7 +83,7 @@ impl GameStatePacket {
     /// Constructor.
     pub fn new() -> GameStatePacket {
         GameStatePacket {
-            hidden_parts: [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
+            hidden_parts: Vec::<(u32, u32)>::new(),
         }
     }
 }

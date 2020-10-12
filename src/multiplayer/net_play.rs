@@ -37,23 +37,19 @@ pub fn net_play(
 
     // Submit moves to the game state
     let res = if player_type == PlayerType::Killer {
-        state
-            .play(
-                (other_player_move.0 as usize, other_player_move.1 as usize),
-                our_move,
-            )
-            .expect("Something went wrong during play")
+        state.play(
+            (other_player_move.0 as usize, other_player_move.1 as usize),
+            our_move,
+        )
     } else {
-        state
-            .play(
-                our_move,
-                (other_player_move.0 as usize, other_player_move.1 as usize),
-            )
-            .expect("Something went wrong during play")
+        state.play(
+            our_move,
+            (other_player_move.0 as usize, other_player_move.1 as usize),
+        )
     };
 
     // Place trap if evaded
-    if res.0 == RoundResult::Evaded {
+    if res.result == RoundResult::Evaded {
         // If we are the victim, place teh trap and then tell the other player where the trap was placed
         if player_type == PlayerType::Victim {
             let trap_loc = victim_place_trap(state) as TrapPacket;
@@ -66,12 +62,12 @@ pub fn net_play(
         }
     }
     // Killer wins
-    else if res.0 == RoundResult::Caught {
+    else if res.result == RoundResult::Caught {
         killer_win_message(player_type);
         return true;
     }
     // Victim wins
-    else if res.0 == RoundResult::AllPartsFound {
+    else if res.result == RoundResult::AllPartsFound {
         victim_win_message(player_type);
         return true;
     }

@@ -133,12 +133,10 @@ impl Server {
 
                 // Generate packet to send to client that describes the game state
                 let mut state_packet = GameStatePacket::new();
-                let mut state_packet_ind: usize = 0;
                 for (i, section) in self.state.sections.iter().enumerate() {
                     for (j, sub_section) in section.sub_sections.iter().enumerate() {
                         if sub_section.part {
-                            state_packet.hidden_parts[state_packet_ind] = (i as u32, j as u32);
-                            state_packet_ind += 1;
+                            state_packet.hidden_parts.push((i as u32, j as u32));
                         }
                     }
                 }

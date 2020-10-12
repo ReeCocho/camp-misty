@@ -5,16 +5,16 @@ use crate::util::*;
 pub fn play_killer(state: &mut GameState) -> (usize, usize) {
     // Convenience function for special print out
     let found_part_msg = || {
-        if state.last_result.1 != SECTION_COUNT {
+        if let Some(ind) = state.last_result.part_section_index {
             println!(
                 "Oh no! The victim found a car part in the {}!",
-                state.sections[state.last_result.1].name
+                state.sections[ind].name
             );
         }
     };
 
     // Print out a special message depending on what happened last round
-    match state.last_result.0 {
+    match state.last_result.result {
         RoundResult::ChaseBegins(section) => {
             found_part_msg();
             println!("Muahaha! You have the victim in your sights!");
@@ -49,13 +49,12 @@ pub fn play_killer(state: &mut GameState) -> (usize, usize) {
             println!("They are wounded. If you find them again, you win...");
             println!("Now, which location would you like to check?");
         }
-
         // Win conditions are ignored
         _ => {}
     }
 
     // Determine the round type
-    match state.last_result.0 {
+    match state.last_result.result {
         // Chase round!
         RoundResult::ChaseBegins(section) => {
             // Print all sub sections and construct a vec with all sub section characters

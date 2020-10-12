@@ -33,7 +33,7 @@ pub fn play_singleplayer() {
     match player_type {
         PlayerType::Killer => {
             // Create victim
-            let mut victim = VictimAI::new();
+            let mut victim = VictimAI::new(&state);
 
             // Play game until there is a winner
             loop {
@@ -42,19 +42,17 @@ pub fn play_singleplayer() {
                 let victim_move = victim.play(&mut state);
 
                 // Submit moves to the game state
-                let res = state
-                    .play(victim_move, killer_move)
-                    .expect("Something went wrong during play");
+                let res = state.play(victim_move, killer_move);
 
                 // Place trap if evaded
-                if res.0 == RoundResult::Evaded {
+                if res.result == RoundResult::Evaded {
                     victim.place_trap(&mut state);
                 }
                 // Break if someone won
-                else if res.0 == RoundResult::Caught {
+                else if res.result == RoundResult::Caught {
                     killer_win_message(player_type);
                     break;
-                } else if res.0 == RoundResult::AllPartsFound {
+                } else if res.result == RoundResult::AllPartsFound {
                     victim_win_message(player_type);
                     break;
                 }
@@ -63,7 +61,7 @@ pub fn play_singleplayer() {
 
         PlayerType::Victim => {
             // Create killer
-            let mut killer = KillerAI::new();
+            let mut killer = KillerAI::new(&state);
 
             // Play game until there is a winner
             loop {
@@ -72,19 +70,17 @@ pub fn play_singleplayer() {
                 let victim_move = play_victim(&state);
 
                 // Submit moves to the game state
-                let res = state
-                    .play(victim_move, killer_move)
-                    .expect("Something went wrong during play");
+                let res = state.play(victim_move, killer_move);
 
                 // Place trap if evaded
-                if res.0 == RoundResult::Evaded {
+                if res.result == RoundResult::Evaded {
                     victim_place_trap(&mut state);
                 }
                 // Break if someone won
-                else if res.0 == RoundResult::Caught {
+                else if res.result == RoundResult::Caught {
                     killer_win_message(player_type);
                     break;
-                } else if res.0 == RoundResult::AllPartsFound {
+                } else if res.result == RoundResult::AllPartsFound {
                     victim_win_message(player_type);
                     break;
                 }

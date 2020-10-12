@@ -1,7 +1,6 @@
 use rand::Rng;
 
 use crate::game::game_state::*;
-use crate::game::section::*;
 
 /// An AI version of a victim to be used for testing/single player.
 pub struct VictimAI {
@@ -9,25 +8,19 @@ pub struct VictimAI {
     unvisited: Vec<(usize, usize)>,
 }
 
-impl Default for VictimAI {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl VictimAI {
     /// Constructor.
     ///
     /// The only argument is a reference to the game state to play in.
-    pub fn new() -> VictimAI {
+    pub fn new(state: &GameState) -> VictimAI {
         let mut ai = VictimAI {
             unvisited: Vec::<(usize, usize)>::new(),
         };
 
         // Initialize unvisited tuples
         // NOTE: This means the unvisited tuples are sorted by section!
-        for i in 0..SECTION_COUNT {
-            for j in 0..SUB_SECTION_COUNT {
+        for i in 0..state.sections.len() {
+            for j in 0..state.sections[i].sub_sections.len() {
                 ai.unvisited.push((i, j));
             }
         }
@@ -66,7 +59,7 @@ impl VictimAI {
     /// Returns a tuple containing what move the AI decided to take.
     pub fn play(&mut self, state: &mut GameState) -> (usize, usize) {
         // Determine move based off of last round result
-        let tup = match state.last_result.0 {
+        let tup = match state.last_result.result {
             // Normal round logic
             RoundResult::Nothing
             | RoundResult::TrapTriggered
@@ -93,7 +86,10 @@ impl VictimAI {
 
                 // Special case if we have visited all the sections already
                 if valid_moves.is_empty() {
-                    valid_moves.push((section, rand::thread_rng().gen_range(0, SUB_SECTION_COUNT)));
+                    valid_moves.push((
+                        section,
+                        rand::thread_rng().gen_range(0, state.sections[section].sub_sections.len()),
+                    ));
                 }
 
                 // Choose a random move from that list
