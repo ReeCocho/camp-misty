@@ -91,14 +91,6 @@ fn main() {
                 println!("On the next round, the victim will need to hide in a spot in");
                 println!("the same location, and the killer will search for the victim.\n");
 
-                println!("Traps:");
-                println!("If the victim is able to avoid the killer during a chase, they");
-                println!("will get a trap.");
-                println!("This trap is deployed in one of the five locations.");
-                println!("If the killer chooses to search the trapped location, they will");
-                println!("be unable to capture the victim or initiate a chase, even if");
-                println!("they choose the same exact spot.\n");
-
                 println!("Winning:");
                 println!("If the killer choses the same location and spot as the");
                 println!("victim, they will wound the victim.");
